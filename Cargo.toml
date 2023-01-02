@@ -1,0 +1,2 @@
+[workspace]
+members = ["my-weather", "my-weather-gui"]
