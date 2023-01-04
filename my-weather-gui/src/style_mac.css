@@ -1,0 +1,40 @@
+button.refresh {
+  box-shadow: 5px;
+  outline-style: outset;
+  outline-width: 5px;
+}
+
+statusbar {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+statusbar.error {
+  color: red;
+}
+
+item {
+  background-color: lightsteelblue;
+  border-radius: 20px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 15px;
+  padding-right: 15px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+item.current {
+  background-color: lightgrey;
+}
+
+item.warning {
+  background-color: lightcoral;
+  color: whitesmoke;
+  font-weight: bold;
+}
+
+/* spinner {
+  min-height: 50px;
+  min-width: 50px;
+} */
