@@ -115,21 +115,11 @@ impl FactoryPrototype for ForeCastEntry {
             _ => (),
         }
 
-        let mut label = gtk::Label::builder()
+        let label = gtk::Label::builder()
             .halign(gtk::Align::Start)
             .justify(gtk::Justification::Left)
-            .tooltip_markup(&self.summary());
-
-        label = match self {
-            Self::Warning(entry) => label.label(&entry.title),
-            Self::Current(entry) => label.label(&entry.title),
-            Self::Future { day, night, .. } => match (day, night) {
-                (Some(d), Some(n)) => label.label(&format!("{d}\n{n}")),
-                (Some(d), None) => label.label(&d.title),
-                (None, Some(n)) => label.label(&n.title),
-                _ => label,
-            },
-        };
+            .tooltip_markup(&self.summary())
+            .label(self.title().as_ref());
 
         let label = label.build();
 
