@@ -16,7 +16,7 @@ statusbar.error {
 }
 
 item {
-  background-color: lightsteelblue;
+  /* background-color: lightsteelblue; */
   border-radius: 20px;
   padding-top: 5px;
   padding-bottom: 5px;
@@ -39,4 +39,19 @@ item.warning {
 spinner {
   min-height: 50px;
   min-width: 50px;
+}
+
+temperature {
+  border-radius: 50px;
+  padding: 10px 10px 10px 10px;
+  margin: 10px 10px 10px 10px;
+}
+
+temperature.high {
+  background-color: red;
+}
+
+temperature.low {
+  background-color: blue;
+  color: white;
 }
