@@ -27,7 +27,7 @@ item {
 }
 
 item.current {
-  background-color: lightgrey;
+  /* background-color: lightgrey; */
   padding: 10px 10px 10px 10px;
 }
 
@@ -47,31 +47,38 @@ temperature {
   border-radius: 100%;
   padding: 10px 10px 10px 10px;
   margin: 10px 10px 10px 10px;
+  color: white;
 }
 
 temperature.high {
   background-color: red;
-  color: white;
 }
 
 temperature.low {
   background-color: blue;
-  color: white;
+
+}
+
+temperature.current {
+  background-color: darkcyan;
 }
 
 .dayofweek {
   font-weight: bold;
 }
 
-.day {
+description {
+  border-radius: 20px;
   min-width: 200px;
   text-align: start;
+  background-color: antiquewhite;
+}
+
+description.day {
   background-color: lightgoldenrodyellow;
 }
 
-.night {
-  min-width: 200px;
-  text-align: start;
+description.night {
   background-color: darkblue;
   color: white;
 }

@@ -1,4 +1,6 @@
-use crate::types::{DayNight, DayOfWeek, ForeCast, Temperature};
+use crate::types::{
+  CurrentForecast, DayNight, DayOfWeek, Forecast, Temperature,
+};
 use nom::{
   branch::alt,
   bytes::complete::{tag, take_until},
@@ -76,17 +78,48 @@ fn parse_day_of_week(input: &str) -> IResult<&str, DayOfWeek> {
   parser(input)
 }
 
-pub fn parse_title(input: &str) -> IResult<&str, ForeCast> {
+pub fn parse_title(input: &str) -> IResult<&str, Forecast> {
   let (input, day_of_week) = parse_day_of_week(input)?;
   let (input, day_night) = parse_day_night(input)?;
   let parser = tuple((map(parse_description, String::from), parse_temp));
-  let mut parser = map(parser, |(description, temp)| ForeCast {
+  let mut parser = map(parser, |(description, temp)| Forecast {
     day: day_night,
     day_of_week,
     temp,
     description,
   });
   parser(input)
+}
+
+fn parse_signed_number(input: &str) -> IResult<&str, f32> {
+  let fraction_parse = recognize(tuple((digit1, char('.'), digit1)));
+  let num_parse = delimited(
+    space0,
+    tuple((opt(char('-')), alt((fraction_parse, digit1)))),
+    space0,
+  );
+  let mut parser = map_res(num_parse, |(neg, n): (Option<_>, &str)| {
+    n.parse::<f32>()
+      .map(|num| if neg.is_some() { -num } else { num })
+  });
+  parser(input)
+}
+
+pub fn parse_current(input: &str) -> IResult<&str, CurrentForecast> {
+  let (input, description) = delimited(
+    tag("Current Conditions: "),
+    map(take_until(", "), String::from),
+    tag(", "),
+  )(input)?;
+  let (input, temperature) = parse_signed_number(input)?;
+
+  Ok((
+    input,
+    CurrentForecast {
+      description,
+      temperature,
+    },
+  ))
 }
 
 #[cfg(test)]
@@ -152,7 +185,7 @@ mod test {
 
     assert!(matches!(
         forecast,
-        ForeCast {
+        Forecast {
             temp: Temperature::High(n),
             description,
             day: DayNight::Day,
@@ -165,12 +198,23 @@ mod test {
 
     assert!(matches!(
         forecast,
-        ForeCast {
+        Forecast {
             temp: Temperature::Low(n),
             description,
             day: DayNight::Night,
             day_of_week: DayOfWeek::Sunday,
         } if n == -9. && description == "Cloudy periods."
     ))
+  }
+
+  #[test]
+  fn test_parse_current() {
+    let test = "Current Conditions: Light Snow, -3.4°C";
+
+    let (_, result) = parse_current(test).unwrap();
+
+    assert!(
+      matches!(result, CurrentForecast { temperature, description } if temperature == -3.4 && description == "Light Snow")
+    );
   }
 }

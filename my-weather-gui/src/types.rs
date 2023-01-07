@@ -1,17 +1,17 @@
 use my_weather::{Entry, Term};
 use std::collections::HashMap;
 
-use crate::parsers::parse_title;
+use crate::parsers::{parse_current, parse_title};
 
 /// Wrapper type for weather entry elements allowing
 /// classifying and grouping entries.
 #[derive(Debug)]
 pub enum ForeCastEntry {
   Warning(Entry),
-  Current(Entry),
+  Current(CurrentForecastWithEntry),
   Future {
     sequence: usize,
-    forecast: Vec<ForeCastWithEntry>,
+    forecast: Vec<ForecastWithEntry>,
   },
 }
 
@@ -28,7 +28,9 @@ impl ForeCastEntry {
 
     match self {
       Self::Warning(entry) => remap_html(&entry.summary),
-      Self::Current(entry) => remap_html(&entry.summary),
+      Self::Current(CurrentForecastWithEntry { entry, .. }) => {
+        remap_html(&entry.summary)
+      }
       Self::Future { forecast, .. } => {
         let day = forecast
           .iter()
@@ -62,7 +64,7 @@ impl ForeCastEntry {
     //   |input: &str| input.replace("minus ", "-").replace("plus ", "");
     match self {
       Self::Future { .. } => "",
-      Self::Current(entry) => &entry.title,
+      Self::Current(_) => "",
       Self::Warning(entry) => &entry.title,
     }
   }
@@ -87,7 +89,13 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
 
   for (index, entry) in entries.enumerate() {
     match entry.category.term {
-      Term::Current => result.push(ForeCastEntry::Current(entry)),
+      Term::Current => {
+        let cf = entry.title.as_str().parse::<CurrentForecast>().unwrap();
+        result.push(ForeCastEntry::Current(CurrentForecastWithEntry {
+          current: cf,
+          entry,
+        }));
+      }
       Term::Warnings => result.push(ForeCastEntry::Warning(entry)),
       Term::ForeCast => match Day::try_from(&entry) {
         Ok(key) => {
@@ -98,9 +106,9 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
               entry
                 .title
                 .as_str()
-                .parse::<ForeCast>()
+                .parse::<Forecast>()
                 .ok()
-                .map(|fc| ForeCastWithEntry {
+                .map(|fc| ForecastWithEntry {
                   entry,
                   forecast: fc,
                 })
@@ -112,9 +120,9 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
               entry
                 .title
                 .as_str()
-                .parse::<ForeCast>()
+                .parse::<Forecast>()
                 .ok()
-                .map(|fc| ForeCastWithEntry {
+                .map(|fc| ForecastWithEntry {
                   entry,
                   forecast: fc,
                 })
@@ -178,13 +186,13 @@ pub enum Temperature {
 }
 
 #[derive(Debug)]
-pub struct ForeCastWithEntry {
-  pub forecast: ForeCast,
+pub struct ForecastWithEntry {
+  pub forecast: Forecast,
   pub entry: Entry,
 }
 
 #[derive(Debug)]
-pub struct ForeCast {
+pub struct Forecast {
   pub temp: Temperature,
   pub description: String,
   pub day: DayNight,
@@ -225,12 +233,37 @@ impl DayOfWeek {
 #[derive(Debug)]
 pub struct TitleParseError(String);
 
-impl std::str::FromStr for ForeCast {
+impl std::str::FromStr for Forecast {
   type Err = TitleParseError;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
     parse_title(s)
       .map_err(|e| TitleParseError(e.to_string()))
       .map(|(_, forecast)| forecast)
+  }
+}
+
+#[derive(Debug)]
+pub struct CurrentForecastWithEntry {
+  pub current: CurrentForecast,
+  pub entry: Entry,
+}
+
+#[derive(Debug)]
+pub struct CurrentForecast {
+  pub temperature: f32,
+  pub description: String,
+}
+
+#[derive(Debug)]
+pub struct CurrrentForecastError(String);
+
+impl std::str::FromStr for CurrentForecast {
+  type Err = CurrrentForecastError;
+
+  fn from_str(s: &str) -> Result<Self, Self::Err> {
+    parse_current(s)
+      .map_err(|e| CurrrentForecastError(e.to_string()))
+      .map(|(_, cf)| cf)
   }
 }
