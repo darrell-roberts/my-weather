@@ -1,7 +1,7 @@
 button.refresh {
   background-color: darkslategray;
   color: whitesmoke;
-  box-shadow: 5px;
+  /* box-shadow: 5px; */
   outline-style: outset;
   outline-width: 5px;
 }
@@ -16,7 +16,7 @@ statusbar.error {
 }
 
 item {
-  background-color: lightsteelblue;
+  /* background-color: lightsteelblue; */
   border-radius: 20px;
   padding-top: 5px;
   padding-bottom: 5px;
@@ -27,11 +27,13 @@ item {
 }
 
 item.current {
-  background-color: lightgrey;
+  /* background-color: lightgrey; */
+  padding: 10px 10px 10px 10px;
 }
 
 item.warning {
   background-color: lightcoral;
+  padding: 10px 10px 10px 10px;
   color: whitesmoke;
   font-weight: bold;
 }
@@ -39,4 +41,44 @@ item.warning {
 spinner {
   min-height: 50px;
   min-width: 50px;
+}
+
+temperature {
+  border-radius: 100%;
+  padding: 10px 10px 10px 10px;
+  margin: 10px 10px 10px 10px;
+  color: white;
+}
+
+temperature.high {
+  background-color: red;
+}
+
+temperature.low {
+  background-color: blue;
+
+}
+
+temperature.current {
+  background-color: darkcyan;
+}
+
+.dayofweek {
+  font-weight: bold;
+}
+
+description {
+  border-radius: 20px;
+  min-width: 200px;
+  text-align: start;
+  background-color: antiquewhite;
+}
+
+description.day {
+  background-color: lightgoldenrodyellow;
+}
+
+description.night {
+  background-color: darkblue;
+  color: white;
 }
