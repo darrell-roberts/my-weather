@@ -78,7 +78,8 @@ fn parse_day_of_week(input: &str) -> IResult<&str, DayOfWeek> {
   parser(input)
 }
 
-pub fn parse_title(input: &str) -> IResult<&str, Forecast> {
+/// Parses a future forecast.
+pub fn parse_forecast(input: &str) -> IResult<&str, Forecast> {
   let (input, day_of_week) = parse_day_of_week(input)?;
   let (input, day_night) = parse_day_night(input)?;
   let parser = tuple((map(parse_description, String::from), parse_temp));
@@ -105,7 +106,8 @@ fn parse_signed_number(input: &str) -> IResult<&str, f32> {
   parser(input)
 }
 
-pub fn parse_current(input: &str) -> IResult<&str, CurrentForecast> {
+/// Parses the current forecast.
+pub fn parse_current_forecast(input: &str) -> IResult<&str, CurrentForecast> {
   let (input, description) = delimited(
     tag("Current Conditions: "),
     map(take_until(", "), String::from),
@@ -127,7 +129,7 @@ mod test {
   use super::*;
 
   fn test_parse_entry(input: &str, expected: (String, Temperature)) {
-    let (_, forecast) = parse_title(input).unwrap();
+    let (_, forecast) = parse_forecast(input).unwrap();
     assert_eq!(forecast.description, expected.0);
     assert_eq!(forecast.temp, expected.1);
   }
@@ -181,7 +183,7 @@ mod test {
   #[test]
   fn parse_full() {
     let test = "Monday: Sunny. High zero.";
-    let (_, forecast) = parse_title(test).unwrap();
+    let (_, forecast) = parse_forecast(test).unwrap();
 
     assert!(matches!(
         forecast,
@@ -194,7 +196,7 @@ mod test {
     ));
 
     let test = "Sunday night: Cloudy periods. Low minus 9.";
-    let (_, forecast) = parse_title(test).unwrap();
+    let (_, forecast) = parse_forecast(test).unwrap();
 
     assert!(matches!(
         forecast,
@@ -211,7 +213,7 @@ mod test {
   fn test_parse_current() {
     let test = "Current Conditions: Light Snow, -3.4°C";
 
-    let (_, result) = parse_current(test).unwrap();
+    let (_, result) = parse_current_forecast(test).unwrap();
 
     assert!(
       matches!(result, CurrentForecast { temperature, description } if temperature == -3.4 && description == "Light Snow")
