@@ -85,9 +85,6 @@ impl Widgets<AppModel, ()> for AppWidgets {
 /// Widgets used to for each [ForeCastEntry].
 #[derive(Debug, Default)]
 pub struct FactoryWidgets {
-  //   _label: gtk::Label,
-  //   _label_container: gtk::Box,
-  //   _separator: gtk::Separator,
   container: gtk::Box,
 }
 
@@ -111,7 +108,6 @@ impl FactoryPrototype for ForeCastEntry {
     let mut label_container = gtk::Box::builder()
       .css_name("item")
       .orientation(gtk::Orientation::Vertical)
-      // .halign(gtk::Align::Fill)
       .spacing(5);
 
     match self {
@@ -159,116 +155,124 @@ impl FactoryPrototype for ForeCastEntry {
 }
 
 impl ForeCastEntry {
+  /// Build widgets inside a forecast container.
   fn init_forecast(&self, label_container: &gtk::Box) {
     match self {
       Self::Future { forecast, .. } => {
-        let day_of_week_container = gtk::Box::builder()
-          .orientation(gtk::Orientation::Horizontal)
-          .halign(gtk::Align::Center)
-          .build();
-        label_container.append(&day_of_week_container);
-
-        let day_night_container = gtk::Box::builder()
-          .orientation(gtk::Orientation::Horizontal)
-          .build();
-
-        if let Some(day) = forecast
-          .iter()
-          .next()
-          .map(|fc| fc.forecast.day_of_week.as_str())
-        {
-          day_of_week_container.append(
-            &gtk::Label::builder()
-              .label(day)
-              .css_classes(vec!["dayofweek".into()])
-              .tooltip_markup(&self.summary())
-              .build(),
-          );
-        }
-
-        for ForecastWithEntry { forecast, .. } in forecast {
-          let mut high_low_label =
-            gtk::Label::builder().css_name("temperature");
-          match forecast.temp {
-            Temperature::High(n) => {
-              high_low_label = high_low_label
-                .css_classes(vec!["high".into()])
-                .label(&format!("{n}°C"));
-            }
-            Temperature::Low(n) => {
-              high_low_label = high_low_label
-                .css_classes(vec!["low".into()])
-                .label(&format!("{n}°C"));
-            }
-          }
-
-          let mut day_night_label = gtk::Label::builder()
-            .css_name("description")
-            .label(&forecast.description);
-          match forecast.day {
-            DayNight::Day => {
-              day_night_label = day_night_label
-                .css_classes(vec!["day".into()])
-                .halign(gtk::Align::Start)
-            }
-            DayNight::Night => {
-              day_night_label =
-                day_night_label.css_classes(vec!["night".into()])
-            }
-          }
-
-          day_night_container.append(&high_low_label.build());
-          day_night_container.append(&day_night_label.build());
-        }
-        label_container.append(&day_night_container);
+        self.init_future_forecast(forecast, label_container);
       }
       Self::Current(forecast) => {
-        let day_of_week_container = gtk::Box::builder()
-          .orientation(gtk::Orientation::Horizontal)
-          .halign(gtk::Align::Center)
-          .build();
-
-        day_of_week_container.append(
-          &gtk::Label::builder()
-            .label("Current")
-            .css_classes(vec!["dayofweek".into()])
-            .tooltip_markup(&self.summary())
-            .build(),
-        );
-
-        let info_container = gtk::Box::builder()
-          .orientation(gtk::Orientation::Horizontal)
-          .halign(gtk::Align::Center)
-          .build();
-
-        info_container.append(
-          &gtk::Label::builder()
-            .css_name("temperature")
-            .css_classes(vec!["current".into()])
-            .label(&format!("{}°C", forecast.current.temperature))
-            .build(),
-        );
-
-        info_container.append(
-          &gtk::Label::builder()
-            .css_name("description")
-            .label(&forecast.current.description)
-            .build(),
-        );
-
-        label_container.append(&day_of_week_container);
-        label_container.append(&info_container);
+        self.init_current_forecast(forecast, label_container);
       }
-      Self::Warning(_) => {
+      Self::Warning(entry) => {
         label_container.append(
           &gtk::Label::builder()
             .halign(gtk::Align::Center)
-            // .height_request(50)
             .tooltip_markup(&self.summary())
-            .label(self.title().as_ref())
+            .label(&entry.title)
             .build(),
         );
       }
     }
+  }
+
+  /// Build widgets for a current forecast.
+  fn init_current_forecast(
+    &self,
+    forecast: &crate::types::CurrentForecastWithEntry,
+    label_container: &gtk::Box,
+  ) {
+    let day_of_week_container = gtk::Box::builder()
+      .orientation(gtk::Orientation::Horizontal)
+      .halign(gtk::Align::Center)
+      .build();
+    day_of_week_container.append(
+      &gtk::Label::builder()
+        .label("Current")
+        .css_classes(vec!["dayofweek".into()])
+        .tooltip_markup(&self.summary())
+        .build(),
+    );
+    let info_container = gtk::Box::builder()
+      .orientation(gtk::Orientation::Horizontal)
+      .halign(gtk::Align::Center)
+      .build();
+    info_container.append(
+      &gtk::Label::builder()
+        .css_name("temperature")
+        .css_classes(vec!["current".into()])
+        .label(&format!("{}°C", forecast.current.temperature))
+        .build(),
+    );
+    info_container.append(
+      &gtk::Label::builder()
+        .css_name("description")
+        .label(&forecast.current.description)
+        .build(),
+    );
+    label_container.append(&day_of_week_container);
+    label_container.append(&info_container);
+  }
+
+  /// Build widgets for a future forecast.
+  fn init_future_forecast(
+    &self,
+    forecast: &[ForecastWithEntry],
+    label_container: &gtk::Box,
+  ) {
+    let day_of_week_container = gtk::Box::builder()
+      .orientation(gtk::Orientation::Horizontal)
+      .halign(gtk::Align::Center)
+      .build();
+    label_container.append(&day_of_week_container);
+    let day_night_container = gtk::Box::builder()
+      .orientation(gtk::Orientation::Horizontal)
+      .build();
+    if let Some(day) = forecast
+      .iter()
+      .next()
+      .map(|fc| fc.forecast.day_of_week.as_str())
+    {
+      day_of_week_container.append(
+        &gtk::Label::builder()
+          .label(day)
+          .css_classes(vec!["dayofweek".into()])
+          .tooltip_markup(&self.summary())
+          .build(),
+      );
+    }
+    for ForecastWithEntry { forecast, .. } in forecast {
+      let mut high_low_label = gtk::Label::builder().css_name("temperature");
+      match forecast.temp {
+        Temperature::High(n) => {
+          high_low_label = high_low_label
+            .css_classes(vec!["high".into()])
+            .label(&format!("{n}°C"));
+        }
+        Temperature::Low(n) => {
+          high_low_label = high_low_label
+            .css_classes(vec!["low".into()])
+            .label(&format!("{n}°C"));
+        }
+      }
+
+      let mut day_night_label = gtk::Label::builder()
+        .css_name("description")
+        .label(&forecast.description);
+      match forecast.day {
+        DayNight::Day => {
+          day_night_label = day_night_label
+            .css_classes(vec!["day".into()])
+            .halign(gtk::Align::Start)
+        }
+        DayNight::Night => {
+          day_night_label = day_night_label.css_classes(vec!["night".into()])
+        }
+      }
+
+      day_night_container.append(&high_low_label.build());
+      day_night_container.append(&day_night_label.build());
+    }
+    label_container.append(&day_night_container);
   }
 }

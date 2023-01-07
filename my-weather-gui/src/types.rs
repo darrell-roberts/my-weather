@@ -1,7 +1,7 @@
 use my_weather::{Entry, Term};
 use std::collections::HashMap;
 
-use crate::parsers::{parse_current, parse_title};
+use crate::parsers::{parse_current_forecast, parse_forecast};
 
 /// Wrapper type for weather entry elements allowing
 /// classifying and grouping entries.
@@ -56,16 +56,6 @@ impl ForeCastEntry {
           (None, None) => String::new(),
         }
       }
-    }
-  }
-
-  pub fn title(&self) -> &str {
-    // let reformat =
-    //   |input: &str| input.replace("minus ", "-").replace("plus ", "");
-    match self {
-      Self::Future { .. } => "",
-      Self::Current(_) => "",
-      Self::Warning(entry) => &entry.title,
     }
   }
 }
@@ -237,7 +227,7 @@ impl std::str::FromStr for Forecast {
   type Err = TitleParseError;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    parse_title(s)
+    parse_forecast(s)
       .map_err(|e| TitleParseError(e.to_string()))
       .map(|(_, forecast)| forecast)
   }
@@ -262,7 +252,7 @@ impl std::str::FromStr for CurrentForecast {
   type Err = CurrrentForecastError;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    parse_current(s)
+    parse_current_forecast(s)
       .map_err(|e| CurrrentForecastError(e.to_string()))
       .map(|(_, cf)| cf)
   }

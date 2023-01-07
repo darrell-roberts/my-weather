@@ -70,7 +70,6 @@ temperature.current {
 description {
   border-radius: 20px;
   min-width: 200px;
-  text-align: start;
   background-color: antiquewhite;
 }
 
