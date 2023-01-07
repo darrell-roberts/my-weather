@@ -1,5 +1,5 @@
 use my_weather::{Entry, Term};
-use std::{borrow::Cow, collections::HashMap};
+use std::collections::HashMap;
 
 use crate::parsers::parse_title;
 
@@ -11,9 +11,6 @@ pub enum ForeCastEntry {
   Current(Entry),
   Future {
     sequence: usize,
-    // day: Option<Entry>,
-    // night: Option<Entry>,
-    // entry: Option<Entry>,
     forecast: Vec<ForeCastWithEntry>,
   },
 }
@@ -57,49 +54,16 @@ impl ForeCastEntry {
           (None, None) => String::new(),
         }
       }
-      //   day: Some(d),
-      //   night: Some(n),
-      //   ..
-      // } => {
-      //   format!(
-      //     "<b>Day:</b>\n{}\n\n<b>Night:</b>\n{}",
-      //     remap_html(&d.summary),
-      //     remap_html(&n.summary)
-      //   )
-      // }
-      // Self::Future {
-      //   day: Some(d),
-      //   night: None,
-      //   ..
-      // } => {
-      //   format!("<b>Day:</b>\n{}", remap_html(&d.summary),)
-      // }
-      // Self::Future {
-      //   day: None,
-      //   night: Some(n),
-      //   ..
-      // } => {
-      //   format!("<b>Night:</b>\n{}", remap_html(&n.summary))
-      // }
-      _ => String::new(),
     }
   }
 
-  pub fn title(&self) -> Cow<str> {
-    let reformat =
-      |input: &str| input.replace("minus ", "-").replace("plus ", "");
+  pub fn title(&self) -> &str {
+    // let reformat =
+    //   |input: &str| input.replace("minus ", "-").replace("plus ", "");
     match self {
-      Self::Future { .. } => Cow::Borrowed(""),
-      // match (day, night) {
-      // (Some(d), Some(n)) => {
-      //   Cow::Owned(format!("{}\n{}", reformat(&d.title), reformat(&n.title)))
-      // }
-      // (Some(d), None) => Cow::Owned(reformat(&d.title)),
-      // (None, Some(n)) => Cow::Owned(reformat(&n.title)),
-      // _ => Cow::Borrowed(""),
-      // },
-      Self::Current(entry) => Cow::Borrowed(&entry.title),
-      Self::Warning(entry) => Cow::Borrowed(&entry.title),
+      Self::Future { .. } => "",
+      Self::Current(entry) => &entry.title,
+      Self::Warning(entry) => &entry.title,
     }
   }
 }
@@ -142,14 +106,6 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
                 })
                 .into_iter(),
             )
-            // let _ = std::mem::replace(
-            //   if entry.title.contains("night:") {
-            //     night
-            //   } else {
-            //     day
-            //   },
-            //   Some(entry),
-            // );
           } else {
             let mut forecast = vec![];
             forecast.extend(
@@ -169,21 +125,7 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
               ForeCastEntry::Future {
                 sequence: index,
                 forecast,
-              }, // if entry.title.contains("night:") {
-                 //   ForeCastEntry::Future {
-                 //     sequence: index,
-                 //     day: None,
-                 //     forecast: entry.title.as_str().parse().unwrap(),
-                 //     night: Some(entry),
-                 //   }
-                 // } else {
-                 //   ForeCastEntry::Future {
-                 //     sequence: index,
-                 //     forecast: entry.title.as_str().parse().unwrap(),
-                 //     day: Some(entry),
-                 //     night: None,
-                 //   }
-                 // },
+              },
             );
           }
         }
@@ -264,6 +206,20 @@ pub enum DayOfWeek {
   Friday,
   Saturday,
   Sunday,
+}
+
+impl DayOfWeek {
+  pub fn as_str(&self) -> &str {
+    match self {
+      Self::Monday => "Monday",
+      Self::Tuesday => "Tuesday",
+      Self::Wednesday => "Wednesday",
+      Self::Thursday => "Thursday",
+      Self::Friday => "Friday",
+      Self::Saturday => "Saturday",
+      Self::Sunday => "Sunday",
+    }
+  }
 }
 
 #[derive(Debug)]

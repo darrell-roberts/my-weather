@@ -1,7 +1,7 @@
 button.refresh {
   background-color: darkslategray;
   color: whitesmoke;
-  box-shadow: 5px;
+  /* box-shadow: 5px; */
   outline-style: outset;
   outline-width: 5px;
 }
@@ -28,10 +28,12 @@ item {
 
 item.current {
   background-color: lightgrey;
+  padding: 10px 10px 10px 10px;
 }
 
 item.warning {
   background-color: lightcoral;
+  padding: 10px 10px 10px 10px;
   color: whitesmoke;
   font-weight: bold;
 }
@@ -42,16 +44,34 @@ spinner {
 }
 
 temperature {
-  border-radius: 50px;
+  border-radius: 100%;
   padding: 10px 10px 10px 10px;
   margin: 10px 10px 10px 10px;
 }
 
 temperature.high {
   background-color: red;
+  color: white;
 }
 
 temperature.low {
   background-color: blue;
+  color: white;
+}
+
+.dayofweek {
+  font-weight: bold;
+}
+
+.day {
+  min-width: 200px;
+  text-align: start;
+  background-color: lightgoldenrodyellow;
+}
+
+.night {
+  min-width: 200px;
+  text-align: start;
+  background-color: darkblue;
   color: white;
 }

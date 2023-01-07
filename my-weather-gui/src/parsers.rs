@@ -109,6 +109,10 @@ mod test {
       "Saturday night: A few clouds. Low minus 12.",
       ("A few clouds.".into(), Temperature::Low(-12.)),
     );
+    test_parse_entry(
+      "Saturday night: A few clouds. Low minus 13.",
+      ("A few clouds.".into(), Temperature::Low(-13.)),
+    )
   }
 
   #[test]
