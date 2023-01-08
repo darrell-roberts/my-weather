@@ -1,7 +1,9 @@
 //! Main application window widgets.
 use crate::{
   handlers::AsyncHandlerMsg,
-  types::{DayNight, ForeCastEntry, ForecastWithEntry, Temperature},
+  types::{
+    DayNight, Fahrenheit, ForeCastEntry, ForecastWithEntry, Temperature,
+  },
   AppModel, AppMsg,
 };
 use relm4::{
@@ -269,6 +271,7 @@ where
     }
 
     for ForecastWithEntry { forecast, .. } in forecast {
+      // let fahrenheigt: Temperature<Fahrenheit> = forecast.temp.into();
       let high_low_label = gtk::Label::builder()
         .css_name("temperature")
         .css_classes(vec![match &forecast.temp {

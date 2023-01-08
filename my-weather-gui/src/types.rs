@@ -189,11 +189,34 @@ impl PartialEq for Temperature<Celsius> {
   }
 }
 
+impl From<Temperature<Celsius>> for Temperature<Fahrenheit> {
+  fn from(value: Temperature<Celsius>) -> Self {
+    let convert = |n| (n * 2.) + 30.;
+    match value {
+      Temperature::High(n, _) => {
+        Temperature::<Fahrenheit>::High(convert(n), PhantomData)
+      }
+      Temperature::Low(n, _) => {
+        Temperature::<Fahrenheit>::Low(convert(n), PhantomData)
+      }
+    }
+  }
+}
+
 impl std::fmt::Display for Temperature<Celsius> {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     match self {
-      Self::High(n, PhantomData) => write!(f, "{n}°C"),
-      Self::Low(n, PhantomData) => write!(f, "{n}°C"),
+      Self::High(n, _) => write!(f, "{n}°C"),
+      Self::Low(n, _) => write!(f, "{n}°C"),
+    }
+  }
+}
+
+impl std::fmt::Display for Temperature<Fahrenheit> {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      Self::High(n, _) => write!(f, "{n}°F"),
+      Self::Low(n, _) => write!(f, "{n}°F"),
     }
   }
 }
