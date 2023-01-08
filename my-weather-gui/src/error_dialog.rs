@@ -1,5 +1,5 @@
 //! An error dialog component.
-use crate::AppModel;
+use crate::{types::Temperature, widgets::AppWidgets, AppModel};
 use relm4::{gtk::prelude::*, send, ComponentUpdate, Model, Widgets};
 
 pub struct ErrorDialogModel {
@@ -12,8 +12,11 @@ pub enum DialogMsg {
   Close,
 }
 
-impl ComponentUpdate<AppModel> for ErrorDialogModel {
-  fn init_model(_parent_model: &AppModel) -> Self {
+impl<Unit> ComponentUpdate<AppModel<Unit>> for ErrorDialogModel
+where
+  Temperature<Unit>: std::fmt::Display,
+{
+  fn init_model(_parent_model: &AppModel<Unit>) -> Self {
     Self {
       hidden: true,
       message: None,
@@ -24,7 +27,7 @@ impl ComponentUpdate<AppModel> for ErrorDialogModel {
     msg: Self::Msg,
     _components: &Self::Components,
     _sender: relm4::Sender<Self::Msg>,
-    _parent_sender: relm4::Sender<<AppModel as relm4::Model>::Msg>,
+    _parent_sender: relm4::Sender<<AppModel<Unit> as relm4::Model>::Msg>,
   ) {
     match msg {
       DialogMsg::Open(text) => {
@@ -40,7 +43,10 @@ pub struct ErrorDialogWidgets {
   dialog: gtk::MessageDialog,
 }
 
-impl Widgets<ErrorDialogModel, AppModel> for ErrorDialogWidgets {
+impl<Unit> Widgets<ErrorDialogModel, AppModel<Unit>> for ErrorDialogWidgets
+where
+  Temperature<Unit>: std::fmt::Display,
+{
   type Root = gtk::MessageDialog;
 
   fn init_view(
@@ -60,10 +66,14 @@ impl Widgets<ErrorDialogModel, AppModel> for ErrorDialogWidgets {
     Self { dialog }
   }
 
-  fn connect_parent(&mut self, parent_widgets: &<AppModel as Model>::Widgets) {
-    self
-      .dialog
-      .set_transient_for(Some(&parent_widgets.root_widget()))
+  fn connect_parent(
+    &mut self,
+    parent_widgets: &<AppModel<Unit> as Model>::Widgets,
+  ) {
+    self.dialog.set_transient_for(Some(&<AppWidgets as Widgets<
+      AppModel<Unit>,
+      (),
+    >>::root_widget(parent_widgets)))
   }
 
   fn root_widget(&self) -> Self::Root {

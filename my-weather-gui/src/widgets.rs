@@ -11,7 +11,10 @@ use relm4::{
 };
 
 #[relm4_macros::widget(pub)]
-impl Widgets<AppModel, ()> for AppWidgets {
+impl<Unit> Widgets<AppModel<Unit>, ()> for AppWidgets
+where
+  Temperature<Unit>: std::fmt::Display,
+{
   view! {
     gtk::ApplicationWindow {
       set_title: Some("My Weather"),
@@ -96,7 +99,10 @@ pub struct FactoryWidgets {
   container: gtk::Box,
 }
 
-impl FactoryPrototype for ForeCastEntry {
+impl<Unit> FactoryPrototype for ForeCastEntry<Unit>
+where
+  Temperature<Unit>: std::fmt::Display,
+{
   type Factory = FactoryVec<Self>;
   type Widgets = FactoryWidgets;
   type Root = gtk::Box;
@@ -162,7 +168,10 @@ impl FactoryPrototype for ForeCastEntry {
   }
 }
 
-impl ForeCastEntry {
+impl<Unit> ForeCastEntry<Unit>
+where
+  Temperature<Unit>: std::fmt::Display,
+{
   /// Build widgets inside a forecast container.
   fn init_forecast(&self, row_container: &gtk::Box) {
     match self {
@@ -225,7 +234,7 @@ impl ForeCastEntry {
   /// Build widgets for a future forecast.
   fn init_future_forecast(
     &self,
-    forecast: &[ForecastWithEntry],
+    forecast: &[ForecastWithEntry<Unit>],
     row_container: &gtk::Box,
   ) {
     let day_of_week_container = gtk::Box::builder()
@@ -260,19 +269,13 @@ impl ForeCastEntry {
     }
 
     for ForecastWithEntry { forecast, .. } in forecast {
-      let mut high_low_label = gtk::Label::builder().css_name("temperature");
-      match forecast.temp {
-        Temperature::High(n) => {
-          high_low_label = high_low_label
-            .css_classes(vec!["high".into()])
-            .label(&format!("{n}°C"));
-        }
-        Temperature::Low(n) => {
-          high_low_label = high_low_label
-            .css_classes(vec!["low".into()])
-            .label(&format!("{n}°C"));
-        }
-      }
+      let high_low_label = gtk::Label::builder()
+        .css_name("temperature")
+        .css_classes(vec![match &forecast.temp {
+          Temperature::High(..) => "high".into(),
+          Temperature::Low(..) => "low".into(),
+        }])
+        .label(&format!("{}", &forecast.temp));
 
       let mut day_night_label = gtk::Label::builder()
         .css_name("description")

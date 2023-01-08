@@ -1,11 +1,13 @@
 //! Parser combinator functions for parsing text into structured types.
+use std::marker::PhantomData;
+
 use crate::types::{
   CurrentForecast, DayNight, DayOfWeek, Forecast, Temperature,
 };
 use nom::{
   branch::alt,
   bytes::complete::{tag, take_until},
-  character::complete::{char, digit1, space0, space1},
+  character::complete::{char, digit1, space0},
   combinator::{map, map_res, opt, recognize, value},
   sequence::{delimited, tuple},
   IResult,
@@ -13,38 +15,43 @@ use nom::{
 
 /// Parse an optionally signed number.
 fn parse_number(input: &str) -> IResult<&str, f32> {
-  let fraction_parse = recognize(tuple((digit1, char('.'), digit1)));
-  let negative = recognize(tuple((tag("minus"), space1)));
-  let num_parse = delimited(
+  // let fraction_parse = recognize(tuple((digit1, char('.'), digit1)));
+  let sign = recognize(tuple((
+    alt((tag("minus"), tag("plus"), tag("zero"))),
     space0,
-    tuple((opt(negative), alt((tag("zero"), fraction_parse, digit1)))),
-    space0,
-  );
-  let mut parser = map_res(num_parse, |(neg, n): (Option<_>, &str)| {
-    if n == "zero" {
+  )));
+
+  let num_parse = delimited(space0, tuple((sign, opt(digit1))), char('.'));
+  let mut parser = map_res(num_parse, |(sign, n): (&str, Option<&str>)| {
+    if sign == "zero" {
       Ok(0.)
     } else {
-      n.parse::<f32>()
-        .map(|num| if neg.is_some() { -num } else { num })
+      n.expect("parsed number").parse::<f32>().map(|num| {
+        if sign == "minus " {
+          -num
+        } else {
+          num
+        }
+      })
     }
   });
   parser(input)
 }
 
-fn parse_temp(input: &str) -> IResult<&str, Temperature> {
+fn parse_temp<Unit>(input: &str) -> IResult<&str, Temperature<Unit>> {
   let high_parser = map(
     delimited(
       alt((tag("High"), tag("Temperature steady near"))),
       parse_number,
-      char('.'),
+      opt(char(' ')),
     ),
-    Temperature::High,
+    |n| Temperature::High(n, PhantomData),
   );
 
-  let low_parser = map(
-    delimited(tag("Low"), parse_number, char('.')),
-    Temperature::Low,
-  );
+  let low_parser =
+    map(delimited(tag("Low"), parse_number, opt(char(' '))), |n| {
+      Temperature::Low(n, PhantomData)
+    });
 
   alt((high_parser, low_parser))(input)
 }
@@ -80,7 +87,7 @@ fn parse_day_of_week(input: &str) -> IResult<&str, DayOfWeek> {
 }
 
 /// Parses a future forecast.
-pub fn parse_forecast(input: &str) -> IResult<&str, Forecast> {
+pub fn parse_forecast<Unit>(input: &str) -> IResult<&str, Forecast<Unit>> {
   let (input, day_of_week) = parse_day_of_week(input)?;
   let (input, day_night) = parse_day_night(input)?;
   let parser = tuple((map(parse_description, String::from), parse_temp));
@@ -127,9 +134,12 @@ pub fn parse_current_forecast(input: &str) -> IResult<&str, CurrentForecast> {
 
 #[cfg(test)]
 mod test {
+  use crate::types::Celsius;
+  use std::marker::PhantomData;
+
   use super::*;
 
-  fn test_parse_entry(input: &str, expected: (String, Temperature)) {
+  fn test_parse_entry(input: &str, expected: (String, Temperature<Celsius>)) {
     let (_, forecast) = parse_forecast(input).unwrap();
     assert_eq!(forecast.description, expected.0);
     assert_eq!(forecast.temp, expected.1);
@@ -139,15 +149,24 @@ mod test {
   fn test_parse_temp() {
     test_parse_entry(
       "Saturday: A mix of sun and cloud. Temperature steady near minus 1.",
-      ("A mix of sun and cloud.".into(), Temperature::High(-1.)),
+      (
+        "A mix of sun and cloud.".into(),
+        Temperature::<Celsius>::High(-1., PhantomData),
+      ),
     );
     test_parse_entry(
       "Saturday night: A few clouds. Low minus 12.",
-      ("A few clouds.".into(), Temperature::Low(-12.)),
+      (
+        "A few clouds.".into(),
+        Temperature::<Celsius>::Low(-12., PhantomData),
+      ),
     );
     test_parse_entry(
       "Saturday night: A few clouds. Low minus 13.",
-      ("A few clouds.".into(), Temperature::Low(-13.)),
+      (
+        "A few clouds.".into(),
+        Temperature::<Celsius>::Low(-13., PhantomData),
+      ),
     )
   }
 
@@ -155,12 +174,17 @@ mod test {
   fn test_parse_number() {
     let test = "minus 1. Forecast issued 3:45 PM EST Friday 06 January 2023";
     let result = parse_number(test);
-    assert!(result.is_ok())
+    assert!(result.is_ok());
+
+    let test = "zero.";
+
+    let result = parse_number(test).unwrap();
+    assert_eq!(result.1, 0.);
   }
 
   #[test]
   fn test_parse_day_of_week() {
-    let test = "Monday: Sunny. High zero";
+    let test = "Monday: Sunny. High zero.";
 
     let result = parse_day_of_week(test).unwrap();
     assert_eq!(result.1, DayOfWeek::Monday);
@@ -184,12 +208,12 @@ mod test {
   #[test]
   fn parse_full() {
     let test = "Monday: Sunny. High zero.";
-    let (_, forecast) = parse_forecast(test).unwrap();
+    let (_, forecast) = parse_forecast::<Celsius>(test).unwrap();
 
     assert!(matches!(
         forecast,
         Forecast {
-            temp: Temperature::High(n),
+            temp: Temperature::High(n, PhantomData),
             description,
             day: DayNight::Day,
             day_of_week: DayOfWeek::Monday,
@@ -197,17 +221,59 @@ mod test {
     ));
 
     let test = "Sunday night: Cloudy periods. Low minus 9.";
-    let (_, forecast) = parse_forecast(test).unwrap();
+    let (_, forecast) = parse_forecast::<Celsius>(test).unwrap();
 
     assert!(matches!(
         forecast,
         Forecast {
-            temp: Temperature::Low(n),
+            temp: Temperature::Low(n, PhantomData),
             description,
             day: DayNight::Night,
             day_of_week: DayOfWeek::Sunday,
         } if n == -9. && description == "Cloudy periods."
+    ));
+
+    let test = "Thursday: Snow. High plus 2.";
+    let (_, forecast) = parse_forecast::<Celsius>(test).unwrap();
+
+    assert!(matches!(
+      forecast,
+      Forecast {
+        temp: Temperature::High(n, PhantomData),
+        description,
+        day: DayNight::Day,
+        day_of_week: DayOfWeek::Thursday,
+      } if n == 2. && description == "Snow."
+    ));
+
+    let test = "Saturday: Chance of flurries. High minus 3. POP 60%";
+    let (_, forecast) = parse_forecast::<Celsius>(test).unwrap();
+
+    assert!(matches!(
+      forecast,
+      Forecast {
+        temp: Temperature::High(n, PhantomData),
+        description,
+        day: DayNight::Day,
+        day_of_week: DayOfWeek::Saturday,
+      } if n == -3. && description == "Chance of flurries."
     ))
+  }
+
+  #[test]
+  fn test_parse_positive() {
+    let test = "Thursday: Snow. High plus 2.";
+    let (_, forecast) = parse_forecast::<Celsius>(test).unwrap();
+
+    assert!(matches!(
+      forecast,
+      Forecast {
+        temp: Temperature::High(n, PhantomData),
+        description,
+        day: DayNight::Day,
+        day_of_week: DayOfWeek::Thursday,
+      } if n == 2. && description == "Snow."
+    ));
   }
 
   #[test]

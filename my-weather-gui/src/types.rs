@@ -1,21 +1,21 @@
 use my_weather::{Entry, Term};
-use std::collections::HashMap;
+use std::{collections::HashMap, marker::PhantomData};
 
 use crate::parsers::{parse_current_forecast, parse_forecast};
 
 /// Wrapper type for weather entry elements allowing
 /// classifying and grouping entries.
 #[derive(Debug)]
-pub enum ForeCastEntry {
+pub enum ForeCastEntry<Unit> {
   Warning(Entry),
   Current(CurrentForecastWithEntry),
   Future {
     sequence: usize,
-    forecast: Vec<ForecastWithEntry>,
+    forecast: Vec<ForecastWithEntry<Unit>>,
   },
 }
 
-impl ForeCastEntry {
+impl<Unit> ForeCastEntry<Unit> {
   pub fn summary(&self) -> String {
     let remap_html = |input: &str| {
       input
@@ -73,7 +73,9 @@ enum Day {
 
 /// Convert an iteration of weather Entry items into a Vec of ForeCastEntry, grouping
 /// future forecasts by day while maintaining the original sequence.
-pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
+pub fn to_forecast<Unit>(
+  entries: impl Iterator<Item = Entry>,
+) -> Vec<ForeCastEntry<Unit>> {
   let mut day_map = HashMap::new();
   let mut result = vec![];
 
@@ -96,7 +98,7 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
               entry
                 .title
                 .as_str()
-                .parse::<Forecast>()
+                .parse()
                 .ok()
                 .map(|fc| ForecastWithEntry {
                   entry,
@@ -110,7 +112,7 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
               entry
                 .title
                 .as_str()
-                .parse::<Forecast>()
+                .parse()
                 .ok()
                 .map(|fc| ForecastWithEntry {
                   entry,
@@ -169,21 +171,42 @@ impl TryFrom<&Entry> for Day {
   }
 }
 
+#[derive(Debug)]
+pub enum Celsius {}
+
+#[derive(Debug)]
+pub enum Fahrenheit {}
+
 #[derive(Debug, PartialEq)]
-pub enum Temperature {
-  High(f32),
-  Low(f32),
+pub enum Temperature<Unit> {
+  High(f32, PhantomData<Unit>),
+  Low(f32, PhantomData<Unit>),
+}
+
+impl PartialEq for Temperature<Celsius> {
+  fn eq(&self, other: &Self) -> bool {
+    self == other
+  }
+}
+
+impl std::fmt::Display for Temperature<Celsius> {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    match self {
+      Self::High(n, PhantomData) => write!(f, "{n}°C"),
+      Self::Low(n, PhantomData) => write!(f, "{n}°C"),
+    }
+  }
 }
 
 #[derive(Debug)]
-pub struct ForecastWithEntry {
-  pub forecast: Forecast,
+pub struct ForecastWithEntry<Unit> {
+  pub forecast: Forecast<Unit>,
   pub entry: Entry,
 }
 
 #[derive(Debug)]
-pub struct Forecast {
-  pub temp: Temperature,
+pub struct Forecast<Unit> {
+  pub temp: Temperature<Unit>,
   pub description: String,
   pub day: DayNight,
   pub day_of_week: DayOfWeek,
@@ -223,7 +246,7 @@ impl DayOfWeek {
 #[derive(Debug)]
 pub struct TitleParseError(String);
 
-impl std::str::FromStr for Forecast {
+impl<Unit> std::str::FromStr for Forecast<Unit> {
   type Err = TitleParseError;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
