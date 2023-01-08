@@ -1,3 +1,4 @@
+//! Main application window widgets.
 use crate::{
   handlers::AsyncHandlerMsg,
   types::{DayNight, ForeCastEntry, ForecastWithEntry, Temperature},
@@ -16,49 +17,56 @@ impl Widgets<AppModel, ()> for AppWidgets {
       set_title: Some("My Weather"),
       set_default_width: 300,
       set_default_height: 100,
-      set_child = container = Some(&gtk::Box) {
-        set_orientation: gtk::Orientation::Vertical,
-        set_margin_all: 5,
-        set_spacing: 5,
 
-        // Forecast data.
-        append = weather = &gtk::Box {
+      set_child = scroll = Some(&gtk::ScrolledWindow) {
+        set_hscrollbar_policy: gtk::PolicyType::Never,
+        set_propagate_natural_width: true,
+        set_propagate_natural_height: true,
+        set_min_content_height: 890,
+        set_child = container = Some(&gtk::Box) {
           set_orientation: gtk::Orientation::Vertical,
           set_margin_all: 5,
           set_spacing: 5,
-          set_visible: watch! { !model.fetching },
-          factory!(model.forecast)
-        },
 
-        // Fetching container.
-        append = spinner_box = &gtk::Box {
-          set_orientation: gtk::Orientation::Vertical,
-          set_margin_all: 5,
-          set_spacing: 5,
-          set_visible: watch! { model.fetching },
-          set_hexpand: true,
-          set_vexpand: true,
-          append = &gtk::Label {
-            set_label: "Fetching weather..."
+          // Forecast data.
+          append = weather = &gtk::Box {
+            set_orientation: gtk::Orientation::Vertical,
+            set_margin_all: 5,
+            set_spacing: 5,
+            set_visible: watch! { !model.fetching },
+            factory!(model.forecast)
           },
-          append = spinner = &gtk::Spinner {
-          }
-        },
 
-        // Reload button.
-        append = reload = &gtk::Button {
-          set_label: "Refresh",
-          set_sensitive: watch! { !model.fetching },
-          set_halign: gtk::Align::Center,
-          set_css_classes: &["refresh"],
-          connect_clicked[sender = components.async_handler.sender()] => move |_| {
-            sender.blocking_send(AsyncHandlerMsg::Fetch).expect("Receiver dropped");
-          }
-        },
+          // Fetching container.
+          append = spinner_box = &gtk::Box {
+            set_orientation: gtk::Orientation::Vertical,
+            set_margin_all: 5,
+            set_spacing: 5,
+            set_visible: watch! { model.fetching },
+            set_hexpand: true,
+            set_vexpand: true,
+            append = &gtk::Label {
+              set_label: "Fetching weather..."
+            },
+            append = spinner = &gtk::Spinner {
+            }
+          },
 
-        append = status = &gtk::Statusbar {
-          set_halign: gtk::Align::Fill,
-        },
+          // Reload button.
+          append = reload = &gtk::Button {
+            set_label: "Refresh",
+            set_sensitive: watch! { !model.fetching },
+            set_halign: gtk::Align::Center,
+            set_css_classes: &["refresh"],
+            connect_clicked[sender = components.async_handler.sender()] => move |_| {
+              sender.blocking_send(AsyncHandlerMsg::Fetch).expect("Receiver dropped");
+            }
+          },
+
+          append = status = &gtk::Statusbar {
+            set_halign: gtk::Align::Fill,
+          },
+        }
       }
     }
   }

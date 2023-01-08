@@ -1,3 +1,4 @@
+//! An error dialog component.
 use crate::AppModel;
 use relm4::{gtk::prelude::*, send, ComponentUpdate, Model, Widgets};
 
