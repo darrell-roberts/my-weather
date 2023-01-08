@@ -87,7 +87,7 @@ fn parse_day_of_week(input: &str) -> IResult<&str, DayOfWeek> {
 }
 
 /// Parses a future forecast.
-pub fn parse_forecast<Unit>(input: &str) -> IResult<&str, Forecast<Unit>> {
+pub fn parse_forecast<Unit>(input: &str) -> IResult<&str, Forecast> {
   let (input, day_of_week) = parse_day_of_week(input)?;
   let (input, day_night) = parse_day_night(input)?;
   let parser = tuple((map(parse_description, String::from), parse_temp));
@@ -140,7 +140,7 @@ mod test {
   use super::*;
 
   fn test_parse_entry(input: &str, expected: (String, Temperature<Celsius>)) {
-    let (_, forecast) = parse_forecast(input).unwrap();
+    let (_, forecast) = parse_forecast::<Celsius>(input).unwrap();
     assert_eq!(forecast.description, expected.0);
     assert_eq!(forecast.temp, expected.1);
   }

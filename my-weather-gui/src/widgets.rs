@@ -13,10 +13,7 @@ use relm4::{
 };
 
 #[relm4_macros::widget(pub)]
-impl<Unit> Widgets<AppModel<Unit>, ()> for AppWidgets
-where
-  Temperature<Unit>: std::fmt::Display,
-{
+impl Widgets<AppModel, ()> for AppWidgets {
   view! {
     gtk::ApplicationWindow {
       set_title: Some("My Weather"),
@@ -101,10 +98,7 @@ pub struct FactoryWidgets {
   container: gtk::Box,
 }
 
-impl<Unit> FactoryPrototype for ForeCastEntry<Unit>
-where
-  Temperature<Unit>: std::fmt::Display,
-{
+impl FactoryPrototype for ForeCastEntry {
   type Factory = FactoryVec<Self>;
   type Widgets = FactoryWidgets;
   type Root = gtk::Box;
@@ -170,10 +164,7 @@ where
   }
 }
 
-impl<Unit> ForeCastEntry<Unit>
-where
-  Temperature<Unit>: std::fmt::Display,
-{
+impl ForeCastEntry {
   /// Build widgets inside a forecast container.
   fn init_forecast(&self, row_container: &gtk::Box) {
     match self {
@@ -236,7 +227,7 @@ where
   /// Build widgets for a future forecast.
   fn init_future_forecast(
     &self,
-    forecast: &[ForecastWithEntry<Unit>],
+    forecast: &[ForecastWithEntry],
     row_container: &gtk::Box,
   ) {
     let day_of_week_container = gtk::Box::builder()
@@ -271,7 +262,7 @@ where
     }
 
     for ForecastWithEntry { forecast, .. } in forecast {
-      // let fahrenheigt: Temperature<Fahrenheit> = forecast.temp.into();
+      // let fahrenheit: &Temperature<Fahrenheit> = &forecast.temp.into();
       let high_low_label = gtk::Label::builder()
         .css_name("temperature")
         .css_classes(vec![match &forecast.temp {
@@ -279,6 +270,7 @@ where
           Temperature::Low(..) => "low".into(),
         }])
         .label(&format!("{}", &forecast.temp));
+      // .label(&format!("{fahrenheit}"));
 
       let mut day_night_label = gtk::Label::builder()
         .css_name("description")

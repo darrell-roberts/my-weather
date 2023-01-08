@@ -6,16 +6,16 @@ use crate::parsers::{parse_current_forecast, parse_forecast};
 /// Wrapper type for weather entry elements allowing
 /// classifying and grouping entries.
 #[derive(Debug)]
-pub enum ForeCastEntry<Unit> {
+pub enum ForeCastEntry {
   Warning(Entry),
   Current(CurrentForecastWithEntry),
   Future {
     sequence: usize,
-    forecast: Vec<ForecastWithEntry<Unit>>,
+    forecast: Vec<ForecastWithEntry>,
   },
 }
 
-impl<Unit> ForeCastEntry<Unit> {
+impl ForeCastEntry {
   pub fn summary(&self) -> String {
     let remap_html = |input: &str| {
       input
@@ -73,9 +73,7 @@ enum Day {
 
 /// Convert an iteration of weather Entry items into a Vec of ForeCastEntry, grouping
 /// future forecasts by day while maintaining the original sequence.
-pub fn to_forecast<Unit>(
-  entries: impl Iterator<Item = Entry>,
-) -> Vec<ForeCastEntry<Unit>> {
+pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
   let mut day_map = HashMap::new();
   let mut result = vec![];
 
@@ -171,13 +169,13 @@ impl TryFrom<&Entry> for Day {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum Celsius {}
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum Fahrenheit {}
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum Temperature<Unit> {
   High(f32, PhantomData<Unit>),
   Low(f32, PhantomData<Unit>),
@@ -222,14 +220,14 @@ impl std::fmt::Display for Temperature<Fahrenheit> {
 }
 
 #[derive(Debug)]
-pub struct ForecastWithEntry<Unit> {
-  pub forecast: Forecast<Unit>,
+pub struct ForecastWithEntry {
+  pub forecast: Forecast,
   pub entry: Entry,
 }
 
 #[derive(Debug)]
-pub struct Forecast<Unit> {
-  pub temp: Temperature<Unit>,
+pub struct Forecast {
+  pub temp: Temperature<Celsius>,
   pub description: String,
   pub day: DayNight,
   pub day_of_week: DayOfWeek,
@@ -269,11 +267,11 @@ impl DayOfWeek {
 #[derive(Debug)]
 pub struct TitleParseError(String);
 
-impl<Unit> std::str::FromStr for Forecast<Unit> {
+impl std::str::FromStr for Forecast {
   type Err = TitleParseError;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
-    parse_forecast(s)
+    parse_forecast::<Celsius>(s)
       .map_err(|e| TitleParseError(e.to_string()))
       .map(|(_, forecast)| forecast)
   }

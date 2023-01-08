@@ -1,5 +1,4 @@
 //! Message handler for making asynchronous IO call to RSS API.
-use crate::types::Temperature;
 use crate::{AppModel, AppMsg};
 use my_weather::get_weather;
 use relm4::{send, MessageHandler, Model, Sender};
@@ -19,16 +18,13 @@ pub struct AsyncHandler {
   sender: TokioSender<AsyncHandlerMsg>,
 }
 
-impl<Unit> MessageHandler<AppModel<Unit>> for AsyncHandler
-where
-  Temperature<Unit>: std::fmt::Display,
-{
+impl MessageHandler<AppModel> for AsyncHandler {
   type Msg = AsyncHandlerMsg;
   type Sender = TokioSender<AsyncHandlerMsg>;
 
   fn init(
-    _parent_model: &AppModel<Unit>,
-    parent_sender: Sender<<AppModel<Unit> as Model>::Msg>,
+    _parent_model: &AppModel,
+    parent_sender: Sender<<AppModel as Model>::Msg>,
   ) -> Self {
     let (sender, mut rx) = channel::<AsyncHandlerMsg>(5);
 

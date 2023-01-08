@@ -10,35 +10,36 @@ use error_dialog::ErrorDialogModel;
 use handlers::AsyncHandler;
 use my_weather::ForeCast;
 use relm4::{
-  factory::collections::FactoryVec, AppUpdate, Components, Model,
-  RelmComponent, RelmMsgHandler, Sender,
+  factory::collections::FactoryVec, AppUpdate, Model, RelmComponent,
+  RelmMsgHandler, Sender,
 };
-use types::{ForeCastEntry, Temperature};
+use types::ForeCastEntry;
 use widgets::AppWidgets;
 
 pub use types::Celsius;
 
+pub enum TempUnit {
+  Fahrenheit,
+  Celsius,
+}
+
 /// Application state.
-pub struct AppModel<Unit>
-where
-  Temperature<Unit>: std::fmt::Display,
-{
-  forecast: FactoryVec<ForeCastEntry<Unit>>,
+pub struct AppModel {
+  forecast: FactoryVec<ForeCastEntry>,
   fetching: bool,
   error: bool,
   status_message: String,
+  display_temp: TempUnit,
 }
 
-impl<Unit> Default for AppModel<Unit>
-where
-  Temperature<Unit>: std::fmt::Display,
-{
+impl Default for AppModel {
   fn default() -> Self {
     Self {
       forecast: FactoryVec::new(),
       fetching: false,
       error: false,
       status_message: String::new(),
+      display_temp: TempUnit::Celsius,
     }
   }
 }
@@ -55,19 +56,13 @@ pub enum AppMsg {
   Clear,
 }
 
-impl<Unit> Model for AppModel<Unit>
-where
-  Temperature<Unit>: std::fmt::Display,
-{
+impl Model for AppModel {
   type Msg = AppMsg;
   type Widgets = AppWidgets;
-  type Components = AppComponents<Unit>;
+  type Components = AppComponents;
 }
 
-impl<Unit> AppUpdate for AppModel<Unit>
-where
-  Temperature<Unit>: std::fmt::Display,
-{
+impl AppUpdate for AppModel {
   fn update(
     &mut self,
     msg: Self::Msg,
@@ -104,31 +99,28 @@ where
 }
 
 /// Background component for asynchronous IO requests.
-// #[derive(relm4::Components)]
-pub struct AppComponents<Unit>
-where
-  Temperature<Unit>: std::fmt::Display,
-{
-  async_handler: RelmMsgHandler<AsyncHandler, AppModel<Unit>>,
-  error_dialog: RelmComponent<ErrorDialogModel, AppModel<Unit>>,
+#[derive(relm4::Components)]
+pub struct AppComponents {
+  async_handler: RelmMsgHandler<AsyncHandler, AppModel>,
+  error_dialog: RelmComponent<ErrorDialogModel, AppModel>,
 }
 
-impl<Unit> Components<AppModel<Unit>> for AppComponents<Unit>
-where
-  Temperature<Unit>: std::fmt::Display,
-{
-  fn init_components(
-    parent_model: &AppModel<Unit>,
-    parent_sender: Sender<<AppModel<Unit> as Model>::Msg>,
-  ) -> Self {
-    AppComponents {
-      async_handler: RelmMsgHandler::new(parent_model, parent_sender.clone()),
-      error_dialog: RelmComponent::new(parent_model, parent_sender),
-    }
-  }
-  fn connect_parent(
-    &mut self,
-    _parent_widgets: &<AppModel<Unit> as Model>::Widgets,
-  ) {
-  }
-}
+// impl<Unit> Components<AppModel<Unit>> for AppComponents<Unit>
+// where
+//   Temperature<Unit>: std::fmt::Display,
+// {
+//   fn init_components(
+//     parent_model: &AppModel<Unit>,
+//     parent_sender: Sender<<AppModel<Unit> as Model>::Msg>,
+//   ) -> Self {
+//     AppComponents {
+//       async_handler: RelmMsgHandler::new(parent_model, parent_sender.clone()),
+//       error_dialog: RelmComponent::new(parent_model, parent_sender),
+//     }
+//   }
+//   fn connect_parent(
+//     &mut self,
+//     _parent_widgets: &<AppModel<Unit> as Model>::Widgets,
+//   ) {
+//   }
+// }
