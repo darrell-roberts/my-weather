@@ -113,26 +113,26 @@ impl FactoryPrototype for ForeCastEntry {
       .spacing(5)
       .build();
 
-    let mut label_container = gtk::Box::builder()
+    let mut row_container = gtk::Box::builder()
       .css_name("item")
       .orientation(gtk::Orientation::Vertical)
       .spacing(5);
 
     match self {
       Self::Current(_) => {
-        label_container = label_container.css_classes(vec!["current".into()]);
+        row_container = row_container.css_classes(vec!["current".into()]);
       }
       Self::Warning(_) => {
-        label_container = label_container.css_classes(vec!["warning".into()]);
+        row_container = row_container.css_classes(vec!["warning".into()]);
       }
       _ => (),
     }
 
-    let label_container = label_container
+    let row_container = row_container
       .orientation(gtk::Orientation::Vertical)
       .build();
-    self.init_forecast(&label_container);
-    container.append(&label_container);
+    self.init_forecast(&row_container);
+    container.append(&row_container);
     let separator = gtk::Separator::builder()
       .orientation(gtk::Orientation::Horizontal)
       .halign(gtk::Align::Fill)
@@ -164,16 +164,16 @@ impl FactoryPrototype for ForeCastEntry {
 
 impl ForeCastEntry {
   /// Build widgets inside a forecast container.
-  fn init_forecast(&self, label_container: &gtk::Box) {
+  fn init_forecast(&self, row_container: &gtk::Box) {
     match self {
       Self::Future { forecast, .. } => {
-        self.init_future_forecast(forecast, label_container);
+        self.init_future_forecast(forecast, row_container);
       }
       Self::Current(forecast) => {
-        self.init_current_forecast(forecast, label_container);
+        self.init_current_forecast(forecast, row_container);
       }
       Self::Warning(entry) => {
-        label_container.append(
+        row_container.append(
           &gtk::Label::builder()
             .halign(gtk::Align::Center)
             .tooltip_markup(&self.summary())
@@ -188,7 +188,7 @@ impl ForeCastEntry {
   fn init_current_forecast(
     &self,
     forecast: &crate::types::CurrentForecastWithEntry,
-    label_container: &gtk::Box,
+    row_container: &gtk::Box,
   ) {
     let day_of_week_container = gtk::Box::builder()
       .orientation(gtk::Orientation::Horizontal)
@@ -218,21 +218,21 @@ impl ForeCastEntry {
         .label(&forecast.current.description)
         .build(),
     );
-    label_container.append(&day_of_week_container);
-    label_container.append(&info_container);
+    row_container.append(&day_of_week_container);
+    row_container.append(&info_container);
   }
 
   /// Build widgets for a future forecast.
   fn init_future_forecast(
     &self,
     forecast: &[ForecastWithEntry],
-    label_container: &gtk::Box,
+    row_container: &gtk::Box,
   ) {
     let day_of_week_container = gtk::Box::builder()
       .orientation(gtk::Orientation::Horizontal)
       .halign(gtk::Align::Center)
       .build();
-    label_container.append(&day_of_week_container);
+    row_container.append(&day_of_week_container);
     let day_night_container = gtk::Box::builder()
       .orientation(gtk::Orientation::Horizontal)
       .build();
@@ -291,6 +291,6 @@ impl ForeCastEntry {
       day_night_container.append(&high_low_label.build());
       day_night_container.append(&day_night_label.build());
     }
-    label_container.append(&day_night_container);
+    row_container.append(&day_night_container);
   }
 }
