@@ -1,3 +1,4 @@
+//! Message handler for making asynchronous IO call to RSS API.
 use crate::{AppModel, AppMsg};
 use my_weather::get_weather;
 use relm4::{send, MessageHandler, Model, Sender};

@@ -1,3 +1,4 @@
+//! Parser combinator functions for parsing text into structured types.
 use crate::types::{
   CurrentForecast, DayNight, DayOfWeek, Forecast, Temperature,
 };
