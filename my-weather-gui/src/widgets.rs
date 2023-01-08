@@ -249,6 +249,16 @@ impl ForeCastEntry {
           .build(),
       );
     }
+
+    let night_only = forecast.len() == 1
+      && forecast
+        .iter()
+        .any(|fc| matches!(fc.forecast.day, DayNight::Night));
+
+    if night_only {
+      day_night_container.set_halign(gtk::Align::End);
+    }
+
     for ForecastWithEntry { forecast, .. } in forecast {
       let mut high_low_label = gtk::Label::builder().css_name("temperature");
       match forecast.temp {

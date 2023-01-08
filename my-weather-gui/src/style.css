@@ -50,7 +50,7 @@ temperature {
 }
 
 temperature.high {
-  background-color: red;
+  background-color: darkred;
 }
 
 temperature.low {
@@ -68,7 +68,7 @@ temperature.current {
 
 description {
   border-radius: 20px;
-  min-width: 200px;
+  min-width: 150px;
   background-color: antiquewhite;
 }
 
