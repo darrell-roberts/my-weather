@@ -28,9 +28,7 @@ impl ForeCastEntry {
 
     match self {
       Self::Warning(entry) => remap_html(&entry.summary),
-      Self::Current(CurrentForecastWithEntry { entry, .. }) => {
-        remap_html(&entry.summary)
-      }
+      Self::Current(CurrentForecastWithEntry { entry, .. }) => remap_html(&entry.summary),
       Self::Future { forecast, .. } => {
         let day = forecast
           .iter()
@@ -89,9 +87,7 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
       Term::Warnings => result.push(ForeCastEntry::Warning(entry)),
       Term::ForeCast => match Day::try_from(&entry) {
         Ok(key) => {
-          if let Some(ForeCastEntry::Future { forecast, .. }) =
-            day_map.get_mut(&key)
-          {
+          if let Some(ForeCastEntry::Future { forecast, .. }) = day_map.get_mut(&key) {
             forecast.extend(
               entry
                 .title
@@ -135,10 +131,9 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
   // Future forecasts need to be arranged back into their original order.
   let mut sorted = day_map.into_values().collect::<Vec<_>>();
   sorted.sort_by(|a, b| match (a, b) {
-    (
-      ForeCastEntry::Future { sequence: a, .. },
-      ForeCastEntry::Future { sequence: b, .. },
-    ) => a.cmp(b),
+    (ForeCastEntry::Future { sequence: a, .. }, ForeCastEntry::Future { sequence: b, .. }) => {
+      a.cmp(b)
+    }
     _ => std::cmp::Ordering::Equal,
   });
 
@@ -191,12 +186,8 @@ impl From<Temperature<Celsius>> for Temperature<Fahrenheit> {
   fn from(value: Temperature<Celsius>) -> Self {
     let convert = |n| (n * 2.) + 30.;
     match value {
-      Temperature::High(n, _) => {
-        Temperature::<Fahrenheit>::High(convert(n), PhantomData)
-      }
-      Temperature::Low(n, _) => {
-        Temperature::<Fahrenheit>::Low(convert(n), PhantomData)
-      }
+      Temperature::High(n, _) => Temperature::<Fahrenheit>::High(convert(n), PhantomData),
+      Temperature::Low(n, _) => Temperature::<Fahrenheit>::Low(convert(n), PhantomData),
     }
   }
 }

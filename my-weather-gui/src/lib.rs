@@ -10,8 +10,7 @@ use error_dialog::ErrorDialogModel;
 use handlers::AsyncHandler;
 use my_weather::ForeCast;
 use relm4::{
-  factory::collections::FactoryVec, AppUpdate, Model, RelmComponent,
-  RelmMsgHandler, Sender,
+  factory::collections::FactoryVec, AppUpdate, Model, RelmComponent, RelmMsgHandler, Sender,
 };
 use types::ForeCastEntry;
 use widgets::AppWidgets;
@@ -54,6 +53,8 @@ pub enum AppMsg {
   Received(ForeCast),
   /// Clear weather forecasts entries.
   Clear,
+  /// Change the temperature unit.
+  ChangeUnit(TempUnit),
 }
 
 impl Model for AppModel {
@@ -78,8 +79,7 @@ impl AppUpdate for AppModel {
         for fc in to_forecast(forecast.entries()) {
           self.forecast.push(fc)
         }
-        self.status_message =
-          format!("Loaded weather at {}", Local::now().format("%v %r"));
+        self.status_message = format!("Loaded weather at {}", Local::now().format("%v %r"));
       }
       Fetching => {
         self.fetching = true;
@@ -92,6 +92,9 @@ impl AppUpdate for AppModel {
         if let Err(err) = components.error_dialog.send(DialogMsg::Open(error)) {
           eprintln!("Failed to send error to dialog component {err}");
         }
+      }
+      ChangeUnit(unit) => {
+        self.display_temp = unit;
       }
     }
     true

@@ -1,9 +1,7 @@
 //! Main application window widgets.
 use crate::{
   handlers::AsyncHandlerMsg,
-  types::{
-    DayNight, Fahrenheit, ForeCastEntry, ForecastWithEntry, Temperature,
-  },
+  types::{DayNight, ForeCastEntry, ForecastWithEntry, Temperature},
   AppModel, AppMsg,
 };
 use relm4::{
@@ -24,7 +22,7 @@ impl Widgets<AppModel, ()> for AppWidgets {
         set_hscrollbar_policy: gtk::PolicyType::Never,
         set_propagate_natural_width: true,
         set_propagate_natural_height: true,
-        set_min_content_height: 890,
+        set_min_content_height: if cfg!(target_os = "macos") { 780 } else { 890 },
         set_child = container = Some(&gtk::Box) {
           set_orientation: gtk::Orientation::Vertical,
           set_margin_all: 5,
@@ -225,11 +223,7 @@ impl ForeCastEntry {
   }
 
   /// Build widgets for a future forecast.
-  fn init_future_forecast(
-    &self,
-    forecast: &[ForecastWithEntry],
-    row_container: &gtk::Box,
-  ) {
+  fn init_future_forecast(&self, forecast: &[ForecastWithEntry], row_container: &gtk::Box) {
     let day_of_week_container = gtk::Box::builder()
       .orientation(gtk::Orientation::Horizontal)
       .halign(gtk::Align::Center)
@@ -281,9 +275,7 @@ impl ForeCastEntry {
             .css_classes(vec!["day".into()])
             .halign(gtk::Align::Start)
         }
-        DayNight::Night => {
-          day_night_label = day_night_label.css_classes(vec!["night".into()])
-        }
+        DayNight::Night => day_night_label = day_night_label.css_classes(vec!["night".into()]),
       }
 
       day_night_container.append(&high_low_label.build());

@@ -1,9 +1,7 @@
 //! Parser combinator functions for parsing text into structured types.
 use std::marker::PhantomData;
 
-use crate::types::{
-  CurrentForecast, DayNight, DayOfWeek, Forecast, Temperature,
-};
+use crate::types::{CurrentForecast, DayNight, DayOfWeek, Forecast, Temperature};
 use nom::{
   branch::alt,
   bytes::complete::{tag, take_until},
@@ -15,7 +13,6 @@ use nom::{
 
 /// Parse an optionally signed number.
 fn parse_number(input: &str) -> IResult<&str, f32> {
-  // let fraction_parse = recognize(tuple((digit1, char('.'), digit1)));
   let sign = recognize(tuple((
     alt((tag("minus"), tag("plus"), tag("zero"))),
     space0,
@@ -26,13 +23,9 @@ fn parse_number(input: &str) -> IResult<&str, f32> {
     if sign == "zero" {
       Ok(0.)
     } else {
-      n.expect("parsed number").parse::<f32>().map(|num| {
-        if sign == "minus " {
-          -num
-        } else {
-          num
-        }
-      })
+      n.expect("parsed number")
+        .parse::<f32>()
+        .map(|num| if sign == "minus " { -num } else { num })
     }
   });
   parser(input)
@@ -48,10 +41,9 @@ fn parse_temp<Unit>(input: &str) -> IResult<&str, Temperature<Unit>> {
     |n| Temperature::High(n, PhantomData),
   );
 
-  let low_parser =
-    map(delimited(tag("Low"), parse_number, opt(char(' '))), |n| {
-      Temperature::Low(n, PhantomData)
-    });
+  let low_parser = map(delimited(tag("Low"), parse_number, opt(char(' '))), |n| {
+    Temperature::Low(n, PhantomData)
+  });
 
   alt((high_parser, low_parser))(input)
 }

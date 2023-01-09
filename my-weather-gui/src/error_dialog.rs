@@ -63,9 +63,9 @@ impl Widgets<ErrorDialogModel, AppModel> for ErrorDialogWidgets {
   fn connect_parent(&mut self, parent_widgets: &<AppModel as Model>::Widgets) {
     self
       .dialog
-      .set_transient_for(Some(
-        &<AppWidgets as Widgets<AppModel, ()>>::root_widget(parent_widgets),
-      ))
+      .set_transient_for(Some(&<AppWidgets as Widgets<AppModel, ()>>::root_widget(
+        parent_widgets,
+      )))
   }
 
   fn root_widget(&self) -> Self::Root {
