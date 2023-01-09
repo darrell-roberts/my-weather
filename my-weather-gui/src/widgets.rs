@@ -209,7 +209,7 @@ impl ForeCastEntry {
       &gtk::Label::builder()
         .css_name("temperature")
         .css_classes(vec!["current".into()])
-        .label(&format!("{}°C", forecast.current.temperature))
+        .label(&format!("{}", forecast.current.celsius))
         .build(),
     );
     info_container.append(
@@ -259,11 +259,12 @@ impl ForeCastEntry {
       // let fahrenheit: &Temperature<Fahrenheit> = &forecast.temp.into();
       let high_low_label = gtk::Label::builder()
         .css_name("temperature")
-        .css_classes(vec![match &forecast.temp {
+        .css_classes(vec![match &forecast.celsius {
           Temperature::High(..) => "high".into(),
           Temperature::Low(..) => "low".into(),
+          Temperature::Current(..) => "current".into(),
         }])
-        .label(&format!("{}", &forecast.temp));
+        .label(&format!("{}", &forecast.celsius));
       // .label(&format!("{fahrenheit}"));
 
       let mut day_night_label = gtk::Label::builder()

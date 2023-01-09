@@ -174,6 +174,7 @@ pub enum Fahrenheit {}
 pub enum Temperature<Unit> {
   High(f32, PhantomData<Unit>),
   Low(f32, PhantomData<Unit>),
+  Current(f32, PhantomData<Unit>),
 }
 
 impl PartialEq for Temperature<Celsius> {
@@ -188,24 +189,29 @@ impl From<Temperature<Celsius>> for Temperature<Fahrenheit> {
     match value {
       Temperature::High(n, _) => Temperature::<Fahrenheit>::High(convert(n), PhantomData),
       Temperature::Low(n, _) => Temperature::<Fahrenheit>::Low(convert(n), PhantomData),
+      Temperature::Current(n, _) => Temperature::<Fahrenheit>::Current(convert(n), PhantomData),
     }
   }
 }
 
 impl std::fmt::Display for Temperature<Celsius> {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    let mut w = |n| write!(f, "{n}°C");
     match self {
-      Self::High(n, _) => write!(f, "{n}°C"),
-      Self::Low(n, _) => write!(f, "{n}°C"),
+      Self::High(n, _) => w(n),
+      Self::Low(n, _) => w(n),
+      Self::Current(n, _) => w(n),
     }
   }
 }
 
 impl std::fmt::Display for Temperature<Fahrenheit> {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    let mut w = |n| write!(f, "{n}°F");
     match self {
-      Self::High(n, _) => write!(f, "{n}°F"),
-      Self::Low(n, _) => write!(f, "{n}°F"),
+      Self::High(n, _) => w(n),
+      Self::Low(n, _) => w(n),
+      Self::Current(n, _) => w(n),
     }
   }
 }
@@ -218,7 +224,8 @@ pub struct ForecastWithEntry {
 
 #[derive(Debug)]
 pub struct Forecast {
-  pub temp: Temperature<Celsius>,
+  pub celsius: Temperature<Celsius>,
+  pub fahrenheit: Temperature<Fahrenheit>,
   pub description: String,
   pub day: DayNight,
   pub day_of_week: DayOfWeek,
@@ -276,7 +283,8 @@ pub struct CurrentForecastWithEntry {
 
 #[derive(Debug)]
 pub struct CurrentForecast {
-  pub temperature: f32,
+  pub celsius: Temperature<Celsius>,
+  pub fahrenheit: Temperature<Fahrenheit>,
   pub description: String,
 }
 
