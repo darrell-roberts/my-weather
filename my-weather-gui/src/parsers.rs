@@ -19,7 +19,7 @@ fn parse_number(input: &str) -> IResult<&str, f32> {
   )));
 
   let num_parse = delimited(space0, tuple((sign, opt(digit1))), char('.'));
-  let mut parser = map_res(num_parse, |(sign, n): (&str, Option<&str>)| {
+  map_res(num_parse, |(sign, n): (&str, Option<&str>)| {
     if sign == "zero" {
       Ok(0.)
     } else {
@@ -27,8 +27,7 @@ fn parse_number(input: &str) -> IResult<&str, f32> {
         .parse::<f32>()
         .map(|num| if sign == "minus " { -num } else { num })
     }
-  });
-  parser(input)
+  })(input)
 }
 
 fn parse_temp<Unit>(input: &str) -> IResult<&str, Temperature<Unit>> {
