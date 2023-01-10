@@ -18,7 +18,11 @@ fn parse_number(input: &str) -> IResult<&str, f32> {
     space0,
   )));
 
-  let num_parse = delimited(space0, tuple((sign, opt(digit1))), char('.'));
+  let num_parse = delimited(
+    space0,
+    tuple((sign, opt(digit1))),
+    alt((char('.'), char(' '))),
+  );
   map_res(num_parse, |(sign, n): (&str, Option<&str>)| {
     if sign == "zero" {
       Ok(0.)
@@ -33,7 +37,11 @@ fn parse_number(input: &str) -> IResult<&str, f32> {
 fn parse_temp<Unit>(input: &str) -> IResult<&str, Temperature<Unit>> {
   let high_parser = map(
     delimited(
-      alt((tag("High"), tag("Temperature steady near"))),
+      alt((
+        tag("High"),
+        tag("Temperature steady near"),
+        tag("Temperature rising to"),
+      )),
       parse_number,
       opt(char(' ')),
     ),
@@ -52,6 +60,7 @@ fn parse_description(input: &str) -> IResult<&str, &str> {
     take_until("Low"),
     take_until("High"),
     take_until("Temperature steady near"),
+    take_until("Temperature rising to"),
   ));
   let mut parser = map(parse_tags, |s: &str| s.trim());
   parser(input)
@@ -257,7 +266,22 @@ mod test {
         day: DayNight::Day,
         day_of_week: DayOfWeek::Saturday,
       } if n == -3. && description == "Chance of flurries."
-    ))
+    ));
+
+    let test =
+      "Wednesday night: Chance of flurries. Temperature rising to minus 2 by morning. POP 40%";
+    let (_, forecast) = parse_forecast::<Celsius>(test).unwrap();
+
+    assert!(matches!(
+      forecast,
+      Forecast {
+        celsius: Temperature::High(n, _),
+        fahrenheit: Temperature::High(..),
+        description,
+        day: DayNight::Night,
+        day_of_week: DayOfWeek::Wednesday,
+      } if n == -2.
+    ));
   }
 
   #[test]
