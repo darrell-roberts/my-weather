@@ -45,9 +45,11 @@ item.warning {
 
 temperature {
   border-radius: 100%;
-  padding: 10px 10px 10px 10px;
-  margin: 10px 10px 10px 10px;
+  padding: 2px 2px 2px 2px;
+  /* margin: 10px 10px 10px 10px; */
   color: white;
+  min-width: 2em;
+  min-height: 2em;
 }
 
 temperature.high {

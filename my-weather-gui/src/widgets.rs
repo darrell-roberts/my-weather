@@ -23,7 +23,7 @@ impl Widgets<AppModel, ()> for AppWidgets {
         set_hscrollbar_policy: gtk::PolicyType::Never,
         set_propagate_natural_width: true,
         set_propagate_natural_height: true,
-        set_min_content_height: if cfg!(target_os = "macos") { 780 } else { 890 },
+        set_min_content_height: if cfg!(target_os = "macos") { 625 } else { 890 },
         set_child = container = Some(&gtk::Box) {
           set_orientation: gtk::Orientation::Vertical,
           set_margin_all: 5,
@@ -206,6 +206,7 @@ impl ForecastEntryAndTempUnit {
     let info_container = gtk::Box::builder()
       .orientation(gtk::Orientation::Horizontal)
       .halign(gtk::Align::Center)
+      .spacing(5)
       .build();
     let temp_string = if self.1 == TempUnit::Celsius {
       format!("{}", forecast.current.celsius)
@@ -238,6 +239,8 @@ impl ForecastEntryAndTempUnit {
     row_container.append(&day_of_week_container);
     let day_night_container = gtk::Box::builder()
       .orientation(gtk::Orientation::Horizontal)
+      .halign(gtk::Align::Center)
+      .spacing(5)
       .build();
     if let Some(day) = forecast
       .iter()
@@ -253,13 +256,12 @@ impl ForecastEntryAndTempUnit {
       );
     }
 
-    let night_only = forecast.len() == 1
-      && forecast
-        .iter()
-        .any(|fc| matches!(fc.forecast.day, DayNight::Night));
-
-    if night_only {
-      day_night_container.set_halign(gtk::Align::End);
+    if forecast.len() == 1 {
+      if forecast[0].forecast.day == DayNight::Day {
+        day_night_container.set_halign(gtk::Align::Start);
+      } else {
+        day_night_container.set_halign(gtk::Align::End);
+      }
     }
 
     for ForecastWithEntry { forecast, .. } in forecast {
