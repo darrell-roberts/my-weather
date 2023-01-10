@@ -1,5 +1,6 @@
 mod error_dialog;
 mod handlers;
+mod header_menu;
 mod parsers;
 mod types;
 mod widgets;
@@ -8,6 +9,7 @@ use crate::{error_dialog::DialogMsg, types::to_forecast};
 use chrono::Local;
 use error_dialog::ErrorDialogModel;
 use handlers::AsyncHandler;
+use header_menu::HeaderModel;
 use my_weather::ForeCast;
 use relm4::{
   factory::collections::FactoryVec, AppUpdate, Model, RelmComponent, RelmMsgHandler, Sender,
@@ -17,9 +19,10 @@ use widgets::AppWidgets;
 
 pub use types::Celsius;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum TempUnit {
   Fahrenheit,
+  #[default]
   Celsius,
 }
 
@@ -98,12 +101,16 @@ impl AppUpdate for AppModel {
         }
       }
       ChangeUnit(unit) => {
-        let mut updated = vec![];
-        while let Some(mut fc_t) = self.forecast.pop() {
-          fc_t.1 = unit;
-          updated.push(fc_t);
+        let mut fs = vec![];
+
+        while let Some(mut fc) = self.forecast.pop() {
+          fc.1 = unit;
+          fs.push(fc);
         }
-        self.forecast = FactoryVec::from_vec(updated);
+
+        for fc in fs.into_iter().rev() {
+          self.forecast.push(fc);
+        }
       }
     }
     true
@@ -115,4 +122,5 @@ impl AppUpdate for AppModel {
 pub struct AppComponents {
   async_handler: RelmMsgHandler<AsyncHandler, AppModel>,
   error_dialog: RelmComponent<ErrorDialogModel, AppModel>,
+  header: RelmComponent<HeaderModel, AppModel>,
 }

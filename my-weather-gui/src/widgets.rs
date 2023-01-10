@@ -15,6 +15,7 @@ impl Widgets<AppModel, ()> for AppWidgets {
   view! {
     gtk::ApplicationWindow {
       set_title: Some("My Weather"),
+      set_titlebar: Some(components.header.root_widget()),
       set_default_width: 300,
       set_default_height: 100,
 
@@ -152,9 +153,10 @@ impl FactoryPrototype for ForecastEntryAndTempUnit {
 
   fn view(
     &self,
-    _key: &<Self::Factory as relm4::factory::Factory<Self, Self::View>>::Key,
+    key: &<Self::Factory as relm4::factory::Factory<Self, Self::View>>::Key,
     _widgets: &Self::Widgets,
   ) {
+    println!("Updating key {key}");
   }
 
   fn root_widget(widgets: &Self::Widgets) -> &Self::Root {
