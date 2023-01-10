@@ -6,7 +6,7 @@ use crate::parsers::{parse_current_forecast, parse_forecast};
 /// Wrapper type for weather entry elements allowing
 /// classifying and grouping entries.
 #[derive(Debug)]
-pub enum ForeCastEntry {
+pub enum ForecastEntry {
   Warning(Entry),
   Current(CurrentForecastWithEntry),
   Future {
@@ -15,7 +15,7 @@ pub enum ForeCastEntry {
   },
 }
 
-impl ForeCastEntry {
+impl ForecastEntry {
   pub fn summary(&self) -> String {
     let remap_html = |input: &str| {
       input
@@ -71,7 +71,7 @@ enum Day {
 
 /// Convert an iteration of weather Entry items into a Vec of ForeCastEntry, grouping
 /// future forecasts by day while maintaining the original sequence.
-pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
+pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForecastEntry> {
   let mut day_map = HashMap::new();
   let mut result = vec![];
 
@@ -79,15 +79,15 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
     match entry.category.term {
       Term::Current => {
         let cf = entry.title.as_str().parse::<CurrentForecast>().unwrap();
-        result.push(ForeCastEntry::Current(CurrentForecastWithEntry {
+        result.push(ForecastEntry::Current(CurrentForecastWithEntry {
           current: cf,
           entry,
         }));
       }
-      Term::Warnings => result.push(ForeCastEntry::Warning(entry)),
+      Term::Warnings => result.push(ForecastEntry::Warning(entry)),
       Term::ForeCast => match Day::try_from(&entry) {
         Ok(key) => {
-          if let Some(ForeCastEntry::Future { forecast, .. }) = day_map.get_mut(&key) {
+          if let Some(ForecastEntry::Future { forecast, .. }) = day_map.get_mut(&key) {
             forecast.extend(
               entry
                 .title
@@ -116,7 +116,7 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
             );
             day_map.insert(
               key,
-              ForeCastEntry::Future {
+              ForecastEntry::Future {
                 sequence: index,
                 forecast,
               },
@@ -131,7 +131,7 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForeCastEntry> {
   // Future forecasts need to be arranged back into their original order.
   let mut sorted = day_map.into_values().collect::<Vec<_>>();
   sorted.sort_by(|a, b| match (a, b) {
-    (ForeCastEntry::Future { sequence: a, .. }, ForeCastEntry::Future { sequence: b, .. }) => {
+    (ForecastEntry::Future { sequence: a, .. }, ForecastEntry::Future { sequence: b, .. }) => {
       a.cmp(b)
     }
     _ => std::cmp::Ordering::Equal,
@@ -289,14 +289,14 @@ pub struct CurrentForecast {
 }
 
 #[derive(Debug)]
-pub struct CurrrentForecastError(String);
+pub struct CurrentForecastError(String);
 
 impl std::str::FromStr for CurrentForecast {
-  type Err = CurrrentForecastError;
+  type Err = CurrentForecastError;
 
   fn from_str(s: &str) -> Result<Self, Self::Err> {
     parse_current_forecast(s)
-      .map_err(|e| CurrrentForecastError(e.to_string()))
+      .map_err(|e| CurrentForecastError(e.to_string()))
       .map(|(_, cf)| cf)
   }
 }

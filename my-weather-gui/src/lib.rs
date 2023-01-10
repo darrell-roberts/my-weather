@@ -12,23 +12,26 @@ use my_weather::ForeCast;
 use relm4::{
   factory::collections::FactoryVec, AppUpdate, Model, RelmComponent, RelmMsgHandler, Sender,
 };
-use types::ForeCastEntry;
+use types::ForecastEntry;
 use widgets::AppWidgets;
 
 pub use types::Celsius;
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum TempUnit {
   Fahrenheit,
   Celsius,
 }
 
+#[derive(Debug)]
+struct ForecastEntryAndTempUnit(ForecastEntry, TempUnit);
+
 /// Application state.
 pub struct AppModel {
-  forecast: FactoryVec<ForeCastEntry>,
+  forecast: FactoryVec<ForecastEntryAndTempUnit>,
   fetching: bool,
   error: bool,
   status_message: String,
-  display_temp: TempUnit,
 }
 
 impl Default for AppModel {
@@ -38,7 +41,6 @@ impl Default for AppModel {
       fetching: false,
       error: false,
       status_message: String::new(),
-      display_temp: TempUnit::Celsius,
     }
   }
 }
@@ -77,7 +79,9 @@ impl AppUpdate for AppModel {
         self.fetching = false;
         self.forecast.clear();
         for fc in to_forecast(forecast.entries()) {
-          self.forecast.push(fc)
+          self
+            .forecast
+            .push(ForecastEntryAndTempUnit(fc, TempUnit::Celsius));
         }
         self.status_message = format!("Loaded weather at {}", Local::now().format("%v %r"));
       }
@@ -94,7 +98,12 @@ impl AppUpdate for AppModel {
         }
       }
       ChangeUnit(unit) => {
-        self.display_temp = unit;
+        let mut updated = vec![];
+        while let Some(mut fc_t) = self.forecast.pop() {
+          fc_t.1 = unit;
+          updated.push(fc_t);
+        }
+        self.forecast = FactoryVec::from_vec(updated);
       }
     }
     true
@@ -107,23 +116,3 @@ pub struct AppComponents {
   async_handler: RelmMsgHandler<AsyncHandler, AppModel>,
   error_dialog: RelmComponent<ErrorDialogModel, AppModel>,
 }
-
-// impl<Unit> Components<AppModel<Unit>> for AppComponents<Unit>
-// where
-//   Temperature<Unit>: std::fmt::Display,
-// {
-//   fn init_components(
-//     parent_model: &AppModel<Unit>,
-//     parent_sender: Sender<<AppModel<Unit> as Model>::Msg>,
-//   ) -> Self {
-//     AppComponents {
-//       async_handler: RelmMsgHandler::new(parent_model, parent_sender.clone()),
-//       error_dialog: RelmComponent::new(parent_model, parent_sender),
-//     }
-//   }
-//   fn connect_parent(
-//     &mut self,
-//     _parent_widgets: &<AppModel<Unit> as Model>::Widgets,
-//   ) {
-//   }
-// }
