@@ -41,11 +41,9 @@ impl MessageHandler<AppModel> for AsyncHandler {
               send!(parent_sender, AppMsg::Fetching);
               match get_weather().await {
                 Ok(forecast) => {
-                  // println!("received forecast {forecast:?}");
                   send!(parent_sender, AppMsg::Received(forecast))
                 }
                 Err(e) => {
-                  // eprintln!("received error {e}");
                   send!(parent_sender, AppMsg::Error(e.to_string()))
                 }
               }

@@ -265,7 +265,6 @@ impl ForecastEntryAndTempUnit {
     }
 
     for ForecastWithEntry { forecast, .. } in forecast {
-      // let fahrenheit: &Temperature<Fahrenheit> = &forecast.temp.into();
       let temp_string = if self.1 == TempUnit::Celsius {
         format!("{}", &forecast.celsius)
       } else {

@@ -218,8 +218,8 @@ mod test {
     assert!(matches!(
         forecast,
         Forecast {
-            celsius: Temperature::High(c, PhantomData),
-            fahrenheit: Temperature::High(_, PhantomData),
+            celsius: Temperature::High(c, _),
+            fahrenheit: Temperature::High(_, _),
             description,
             day: DayNight::Day,
             day_of_week: DayOfWeek::Monday,
@@ -232,8 +232,8 @@ mod test {
     assert!(matches!(
         forecast,
         Forecast {
-            celsius: Temperature::Low(n, PhantomData),
-            fahrenheit: Temperature::Low(_, PhantomData),
+            celsius: Temperature::Low(n, _),
+            fahrenheit: Temperature::Low(_, _),
             description,
             day: DayNight::Night,
             day_of_week: DayOfWeek::Sunday,
@@ -246,8 +246,8 @@ mod test {
     assert!(matches!(
       forecast,
       Forecast {
-        celsius: Temperature::High(n, PhantomData),
-        fahrenheit: Temperature::High(_, PhantomData),
+        celsius: Temperature::High(n, _),
+        fahrenheit: Temperature::High(_, _),
         description,
         day: DayNight::Day,
         day_of_week: DayOfWeek::Thursday,
@@ -260,8 +260,8 @@ mod test {
     assert!(matches!(
       forecast,
       Forecast {
-        celsius: Temperature::High(n, PhantomData),
-        fahrenheit: Temperature::High(_, PhantomData),
+        celsius: Temperature::High(n, _),
+        fahrenheit: Temperature::High(_, _),
         description,
         day: DayNight::Day,
         day_of_week: DayOfWeek::Saturday,
@@ -280,7 +280,7 @@ mod test {
         description,
         day: DayNight::Night,
         day_of_week: DayOfWeek::Wednesday,
-      } if n == -2.
+      } if n == -2. && description == "Chance of flurries."
     ));
   }
 
