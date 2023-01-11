@@ -23,7 +23,7 @@ impl Widgets<AppModel, ()> for AppWidgets {
         set_hscrollbar_policy: gtk::PolicyType::Never,
         set_propagate_natural_width: true,
         set_propagate_natural_height: true,
-        set_min_content_height: if cfg!(target_os = "macos") { 625 } else { 890 },
+        set_min_content_height: if cfg!(target_os = "macos") { 625 } else { 670 },
         set_child = container = Some(&gtk::Box) {
           set_orientation: gtk::Orientation::Vertical,
           set_margin_all: 5,

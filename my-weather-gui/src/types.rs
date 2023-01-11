@@ -207,7 +207,7 @@ impl std::fmt::Display for Temperature<Celsius> {
 
 impl std::fmt::Display for Temperature<Fahrenheit> {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    let mut w = |n| write!(f, "{n}°F");
+    let mut w = |n| write!(f, "{n:.0}°F");
     match self {
       Self::High(n, _) => w(n),
       Self::Low(n, _) => w(n),
