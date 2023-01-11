@@ -19,9 +19,11 @@ impl std::fmt::Display for ForeCast {
 
 impl ForeCast {
   pub fn current_forecast(&self) -> impl Iterator<Item = &Entry> {
-    self.0.entries.iter().filter(|entry| {
-      matches!(entry.category.term, Term::Current | Term::Warnings)
-    })
+    self
+      .0
+      .entries
+      .iter()
+      .filter(|entry| matches!(entry.category.term, Term::Current | Term::Warnings))
   }
 
   pub fn entries(self) -> impl Iterator<Item = Entry> {
@@ -85,10 +87,7 @@ where
   impl<'de> Visitor<'de> for FilteredEntries {
     type Value = Vec<Entry>;
 
-    fn expecting(
-      &self,
-      formatter: &mut std::fmt::Formatter,
-    ) -> std::fmt::Result {
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
       formatter.write_str("a list of Entry")
     }
 

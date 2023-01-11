@@ -1,8 +1,8 @@
 //! Main application window widgets.
 use crate::{
   handlers::AsyncHandlerMsg,
-  types::{DayNight, ForeCastEntry, ForecastWithEntry, Temperature},
-  AppModel, AppMsg,
+  types::{DayNight, ForecastEntry, ForecastWithEntry, Temperature},
+  AppModel, AppMsg, ForecastEntryAndTempUnit, TempUnit,
 };
 use relm4::{
   factory::{collections::FactoryVec, FactoryPrototype},
@@ -15,6 +15,7 @@ impl Widgets<AppModel, ()> for AppWidgets {
   view! {
     gtk::ApplicationWindow {
       set_title: Some("My Weather"),
+      set_titlebar: Some(components.header.root_widget()),
       set_default_width: 300,
       set_default_height: 100,
 
@@ -22,7 +23,7 @@ impl Widgets<AppModel, ()> for AppWidgets {
         set_hscrollbar_policy: gtk::PolicyType::Never,
         set_propagate_natural_width: true,
         set_propagate_natural_height: true,
-        set_min_content_height: 890,
+        set_min_content_height: if cfg!(target_os = "macos") { 625 } else { 670 },
         set_child = container = Some(&gtk::Box) {
           set_orientation: gtk::Orientation::Vertical,
           set_margin_all: 5,
@@ -96,7 +97,7 @@ pub struct FactoryWidgets {
   container: gtk::Box,
 }
 
-impl FactoryPrototype for ForeCastEntry {
+impl FactoryPrototype for ForecastEntryAndTempUnit {
   type Factory = FactoryVec<Self>;
   type Widgets = FactoryWidgets;
   type Root = gtk::Box;
@@ -118,11 +119,11 @@ impl FactoryPrototype for ForeCastEntry {
       .orientation(gtk::Orientation::Vertical)
       .spacing(5);
 
-    match self {
-      Self::Current(_) => {
+    match self.0 {
+      ForecastEntry::Current(_) => {
         row_container = row_container.css_classes(vec!["current".into()]);
       }
-      Self::Warning(_) => {
+      ForecastEntry::Warning(_) => {
         row_container = row_container.css_classes(vec!["warning".into()]);
       }
       _ => (),
@@ -152,9 +153,10 @@ impl FactoryPrototype for ForeCastEntry {
 
   fn view(
     &self,
-    _key: &<Self::Factory as relm4::factory::Factory<Self, Self::View>>::Key,
+    key: &<Self::Factory as relm4::factory::Factory<Self, Self::View>>::Key,
     _widgets: &Self::Widgets,
   ) {
+    println!("Updating key {key}");
   }
 
   fn root_widget(widgets: &Self::Widgets) -> &Self::Root {
@@ -162,21 +164,21 @@ impl FactoryPrototype for ForeCastEntry {
   }
 }
 
-impl ForeCastEntry {
+impl ForecastEntryAndTempUnit {
   /// Build widgets inside a forecast container.
   fn init_forecast(&self, row_container: &gtk::Box) {
-    match self {
-      Self::Future { forecast, .. } => {
+    match &self.0 {
+      ForecastEntry::Future { forecast, .. } => {
         self.init_future_forecast(forecast, row_container);
       }
-      Self::Current(forecast) => {
+      ForecastEntry::Current(forecast) => {
         self.init_current_forecast(forecast, row_container);
       }
-      Self::Warning(entry) => {
+      ForecastEntry::Warning(entry) => {
         row_container.append(
           &gtk::Label::builder()
             .halign(gtk::Align::Center)
-            .tooltip_markup(&self.summary())
+            .tooltip_markup(&self.0.summary())
             .label(&entry.title)
             .build(),
         );
@@ -198,18 +200,24 @@ impl ForeCastEntry {
       &gtk::Label::builder()
         .label("Current")
         .css_classes(vec!["dayofweek".into()])
-        .tooltip_markup(&self.summary())
+        .tooltip_markup(&self.0.summary())
         .build(),
     );
     let info_container = gtk::Box::builder()
       .orientation(gtk::Orientation::Horizontal)
       .halign(gtk::Align::Center)
+      .spacing(5)
       .build();
+    let temp_string = if self.1 == TempUnit::Celsius {
+      format!("{}", forecast.current.celsius)
+    } else {
+      format!("{}", forecast.current.fahrenheit)
+    };
     info_container.append(
       &gtk::Label::builder()
         .css_name("temperature")
         .css_classes(vec!["current".into()])
-        .label(&format!("{}°C", forecast.current.temperature))
+        .label(&temp_string)
         .build(),
     );
     info_container.append(
@@ -223,11 +231,7 @@ impl ForeCastEntry {
   }
 
   /// Build widgets for a future forecast.
-  fn init_future_forecast(
-    &self,
-    forecast: &[ForecastWithEntry],
-    row_container: &gtk::Box,
-  ) {
+  fn init_future_forecast(&self, forecast: &[ForecastWithEntry], row_container: &gtk::Box) {
     let day_of_week_container = gtk::Box::builder()
       .orientation(gtk::Orientation::Horizontal)
       .halign(gtk::Align::Center)
@@ -235,6 +239,8 @@ impl ForeCastEntry {
     row_container.append(&day_of_week_container);
     let day_night_container = gtk::Box::builder()
       .orientation(gtk::Orientation::Horizontal)
+      .halign(gtk::Align::Center)
+      .spacing(5)
       .build();
     if let Some(day) = forecast
       .iter()
@@ -245,34 +251,34 @@ impl ForeCastEntry {
         &gtk::Label::builder()
           .label(day)
           .css_classes(vec!["dayofweek".into()])
-          .tooltip_markup(&self.summary())
+          .tooltip_markup(&self.0.summary())
           .build(),
       );
     }
 
-    let night_only = forecast.len() == 1
-      && forecast
-        .iter()
-        .any(|fc| matches!(fc.forecast.day, DayNight::Night));
-
-    if night_only {
-      day_night_container.set_halign(gtk::Align::End);
+    if forecast.len() == 1 {
+      if forecast[0].forecast.day == DayNight::Day {
+        day_night_container.set_halign(gtk::Align::Start);
+      } else {
+        day_night_container.set_halign(gtk::Align::End);
+      }
     }
 
     for ForecastWithEntry { forecast, .. } in forecast {
-      let mut high_low_label = gtk::Label::builder().css_name("temperature");
-      match forecast.temp {
-        Temperature::High(n) => {
-          high_low_label = high_low_label
-            .css_classes(vec!["high".into()])
-            .label(&format!("{n}°C"));
-        }
-        Temperature::Low(n) => {
-          high_low_label = high_low_label
-            .css_classes(vec!["low".into()])
-            .label(&format!("{n}°C"));
-        }
-      }
+      // let fahrenheit: &Temperature<Fahrenheit> = &forecast.temp.into();
+      let temp_string = if self.1 == TempUnit::Celsius {
+        format!("{}", &forecast.celsius)
+      } else {
+        format!("{}", &forecast.fahrenheit)
+      };
+      let high_low_label = gtk::Label::builder()
+        .css_name("temperature")
+        .css_classes(vec![match &forecast.celsius {
+          Temperature::High(..) => "high".into(),
+          Temperature::Low(..) => "low".into(),
+          Temperature::Current(..) => "current".into(),
+        }])
+        .label(&temp_string);
 
       let mut day_night_label = gtk::Label::builder()
         .css_name("description")
@@ -283,9 +289,7 @@ impl ForeCastEntry {
             .css_classes(vec!["day".into()])
             .halign(gtk::Align::Start)
         }
-        DayNight::Night => {
-          day_night_label = day_night_label.css_classes(vec!["night".into()])
-        }
+        DayNight::Night => day_night_label = day_night_label.css_classes(vec!["night".into()]),
       }
 
       day_night_container.append(&high_low_label.build());

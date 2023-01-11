@@ -1,5 +1,5 @@
 //! An error dialog component.
-use crate::AppModel;
+use crate::{widgets::AppWidgets, AppModel};
 use relm4::{gtk::prelude::*, send, ComponentUpdate, Model, Widgets};
 
 pub struct ErrorDialogModel {
@@ -63,7 +63,9 @@ impl Widgets<ErrorDialogModel, AppModel> for ErrorDialogWidgets {
   fn connect_parent(&mut self, parent_widgets: &<AppModel as Model>::Widgets) {
     self
       .dialog
-      .set_transient_for(Some(&parent_widgets.root_widget()))
+      .set_transient_for(Some(&<AppWidgets as Widgets<AppModel, ()>>::root_widget(
+        parent_widgets,
+      )))
   }
 
   fn root_widget(&self) -> Self::Root {

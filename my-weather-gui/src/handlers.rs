@@ -22,10 +22,7 @@ impl MessageHandler<AppModel> for AsyncHandler {
   type Msg = AsyncHandlerMsg;
   type Sender = TokioSender<AsyncHandlerMsg>;
 
-  fn init(
-    _parent_model: &AppModel,
-    parent_sender: Sender<<AppModel as Model>::Msg>,
-  ) -> Self {
+  fn init(_parent_model: &AppModel, parent_sender: Sender<<AppModel as Model>::Msg>) -> Self {
     let (sender, mut rx) = channel::<AsyncHandlerMsg>(5);
 
     let rt = Builder::new_multi_thread()

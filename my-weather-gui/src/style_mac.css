@@ -1,5 +1,7 @@
 button.refresh {
-  box-shadow: 5px;
+  /* background-color: darkslategray; */
+  /* color: whitesmoke; */
+  /* box-shadow: 5px; */
   outline-style: outset;
   outline-width: 5px;
 }
@@ -14,22 +16,24 @@ statusbar.error {
 }
 
 item {
-  background-color: lightsteelblue;
+  /* background-color: lightsteelblue; */
   border-radius: 20px;
-  padding-top: 5px;
+  /* padding-top: 5px; */
   padding-bottom: 5px;
   padding-left: 15px;
   padding-right: 15px;
-  margin-top: 5px;
-  margin-bottom: 5px;
+  /* margin-top: 5px; */
+  /* margin-bottom: 5px; */
 }
 
 item.current {
-  background-color: lightgrey;
+  background-color: lightskyblue;
+  padding-top: 10px;
 }
 
 item.warning {
   background-color: lightcoral;
+  padding: 10px 10px 10px 10px;
   color: whitesmoke;
   font-weight: bold;
 }
@@ -38,3 +42,44 @@ item.warning {
   min-height: 50px;
   min-width: 50px;
 } */
+
+temperature {
+  border-radius: 100%;
+  padding: 2px 2px 2px 2px;
+  /* margin: 10px 10px 10px 10px; */
+  color: white;
+  min-width: 2em;
+  min-height: 2em;
+}
+
+temperature.high {
+  background-color: darkred;
+}
+
+temperature.low {
+  background-color: blue;
+
+}
+
+temperature.current {
+  background-color: darkcyan;
+}
+
+.dayofweek {
+  font-weight: bold;
+}
+
+description {
+  border-radius: 20px;
+  min-width: 150px;
+  background-color: antiquewhite;
+}
+
+description.day {
+  background-color: lightgoldenrodyellow;
+}
+
+description.night {
+  background-color: darkblue;
+  color: white;
+}
