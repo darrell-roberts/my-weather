@@ -4,6 +4,7 @@ use crate::{
   types::{DayNight, ForecastEntry, ForecastWithEntry, Temperature},
   AppModel, AppMsg, ForecastEntryAndTempUnit, TempUnit,
 };
+use gtk::pango::EllipsizeMode;
 use relm4::{
   factory::{collections::FactoryVec, FactoryPrototype},
   gtk::prelude::*,
@@ -281,6 +282,8 @@ impl ForecastEntryAndTempUnit {
 
       let mut day_night_label = gtk::Label::builder()
         .css_name("description")
+        .ellipsize(EllipsizeMode::End)
+        .tooltip_text(&forecast.description)
         .label(&forecast.description);
       match forecast.day {
         DayNight::Day => {

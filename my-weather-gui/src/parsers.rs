@@ -1,6 +1,4 @@
 //! Parser combinator functions for parsing text into structured types.
-use std::marker::PhantomData;
-
 use crate::types::{CurrentForecast, DayNight, DayOfWeek, Forecast, Temperature};
 use nom::{
   branch::alt,
@@ -10,6 +8,7 @@ use nom::{
   sequence::{delimited, tuple},
   IResult,
 };
+use std::marker::PhantomData;
 
 /// Parse an optionally signed number.
 fn parse_number(input: &str) -> IResult<&str, f32> {
