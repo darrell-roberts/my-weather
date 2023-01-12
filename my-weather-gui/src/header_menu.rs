@@ -37,32 +37,36 @@ impl Widgets<HeaderModel, AppModel> for HeaderWidgets {
     gtk::HeaderBar {
       set_title_widget = Some(&gtk::Box) {
         set_spacing: 5,
-        set_halign: gtk::Align::Start,
+        set_halign: gtk::Align::End,
 
         append = &gtk::Label {
-            set_label: "My Weather",
+          set_markup: "<b>My Weather</b>",
         },
 
-        append = &gtk::Box {
-          append = group = &gtk::ToggleButton {
-            set_label: "Celsius",
-            set_active: true,
-            connect_toggled(sender) => move |btn| {
-              if btn.is_active() {
-                send!(sender, HeaderMsg::ChangeUnit(TempUnit::Celsius));
-              }
-            },
-          },
+        append = &gtk::MenuButton {
+          set_popover = Some(&gtk::Popover) {
+            set_child = Some(&gtk::Box) {
+              append = group = &gtk::ToggleButton {
+                set_label: "Celsius",
+                set_active: true,
+                connect_toggled(sender) => move |btn| {
+                  if btn.is_active() {
+                    send!(sender, HeaderMsg::ChangeUnit(TempUnit::Celsius));
+                  }
+                },
+              },
 
-          append = &gtk::ToggleButton {
-            set_label: "Fahrenheit",
-            set_group: Some(&group),
-            connect_toggled(sender) => move |btn| {
-              if btn.is_active() {
-                send!(sender, HeaderMsg::ChangeUnit(TempUnit::Fahrenheit));
+              append = &gtk::ToggleButton {
+                set_label: "Fahrenheit",
+                set_group: Some(&group),
+                connect_toggled(sender) => move |btn| {
+                  if btn.is_active() {
+                    send!(sender, HeaderMsg::ChangeUnit(TempUnit::Fahrenheit));
+                  }
+                }
               }
             }
-          }
+          },
         },
       }
     }
