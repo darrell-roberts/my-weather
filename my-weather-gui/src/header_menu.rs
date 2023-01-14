@@ -43,15 +43,17 @@ impl Widgets<HeaderModel, AppModel> for HeaderWidgets {
           set_markup: "<b>My Weather</b>",
         },
 
-        append = &gtk::MenuButton {
+        append = button = &gtk::MenuButton {
           set_popover = Some(&gtk::Popover) {
             set_child = Some(&gtk::Box) {
+              set_orientation: gtk::Orientation::Vertical,
               append = group = &gtk::ToggleButton {
                 set_label: "Celsius",
                 set_active: true,
-                connect_toggled(sender) => move |btn| {
+                connect_toggled(sender, button) => move |btn| {
                   if btn.is_active() {
                     send!(sender, HeaderMsg::ChangeUnit(TempUnit::Celsius));
+                    button.popdown();
                   }
                 },
               },
@@ -59,9 +61,10 @@ impl Widgets<HeaderModel, AppModel> for HeaderWidgets {
               append = &gtk::ToggleButton {
                 set_label: "Fahrenheit",
                 set_group: Some(&group),
-                connect_toggled(sender) => move |btn| {
+                connect_toggled(sender, button) => move |btn| {
                   if btn.is_active() {
                     send!(sender, HeaderMsg::ChangeUnit(TempUnit::Fahrenheit));
+                    button.popdown();
                   }
                 }
               }
