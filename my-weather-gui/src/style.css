@@ -3,6 +3,7 @@ button.refresh {
   color: whitesmoke;
   outline-style: outset;
   outline-width: 5px;
+  margin: 5px 5px 5px 5px;
 }
 
 statusbar {

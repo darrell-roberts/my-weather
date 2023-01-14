@@ -4,6 +4,7 @@ button.refresh {
   /* box-shadow: 5px; */
   outline-style: outset;
   outline-width: 5px;
+  margin: 5px 5px 5px 5px;
 }
 
 statusbar {
@@ -16,14 +17,10 @@ statusbar.error {
 }
 
 item {
-  /* background-color: lightsteelblue; */
   border-radius: 20px;
-  /* padding-top: 5px; */
   padding-bottom: 5px;
   padding-left: 15px;
   padding-right: 15px;
-  /* margin-top: 5px; */
-  /* margin-bottom: 5px; */
 }
 
 item.current {
@@ -46,7 +43,6 @@ item.warning {
 temperature {
   border-radius: 100%;
   padding: 2px 2px 2px 2px;
-  /* margin: 10px 10px 10px 10px; */
   color: white;
   min-width: 2em;
   min-height: 2em;
@@ -72,13 +68,14 @@ temperature.current {
 description {
   border-radius: 20px;
   min-width: 10em;
+  background-color: antiquewhite;
   padding-left: 1em;
   padding-right: 1em;
-  background-color: antiquewhite;
 }
 
 description.day {
   background-color: lightgoldenrodyellow;
+  color: black;
 }
 
 description.night {

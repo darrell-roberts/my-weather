@@ -1,3 +1,4 @@
+//! A header component with title and menu button.
 use crate::{AppModel, AppMsg, TempUnit};
 use relm4::{gtk::prelude::*, send, ComponentUpdate, Model, Widgets};
 

@@ -14,62 +14,67 @@ use relm4::{
 #[relm4_macros::widget(pub)]
 impl Widgets<AppModel, ()> for AppWidgets {
   view! {
-    gtk::ApplicationWindow {
-      set_title: Some("My Weather"),
-      set_titlebar: Some(components.header.root_widget()),
-      set_default_width: 300,
-      set_default_height: 100,
+      gtk::ApplicationWindow {
+        set_title: Some("My Weather"),
+        set_titlebar: Some(components.header.root_widget()),
+        set_resizable: true,
+        set_default_size: args!(400, 800),
 
-      set_child = scroll = Some(&gtk::ScrolledWindow) {
-        set_hscrollbar_policy: gtk::PolicyType::Never,
-        set_propagate_natural_width: true,
-        set_propagate_natural_height: true,
-        set_min_content_height: if cfg!(target_os = "macos") { 625 } else { 750 },
-        set_child = container = Some(&gtk::Box) {
+        set_child = window = Some(&gtk::Box) {
           set_orientation: gtk::Orientation::Vertical,
-          set_margin_all: 5,
-          set_spacing: 5,
 
-          // Forecast data.
-          append = weather = &gtk::Box {
-            set_orientation: gtk::Orientation::Vertical,
-            set_margin_all: 5,
-            set_spacing: 5,
-            set_visible: watch! { !model.fetching },
-            factory!(model.forecast)
-          },
+          // Content area.
+          append: scroll = &gtk::ScrolledWindow {
+            set_hscrollbar_policy: gtk::PolicyType::Never,
+            set_propagate_natural_width: true,
+            set_propagate_natural_height: true,
+            set_child = container = Some(&gtk::Box) {
+              set_orientation: gtk::Orientation::Vertical,
+              set_margin_all: 5,
+              set_spacing: 5,
 
-          // Fetching container.
-          append = spinner_box = &gtk::Box {
-            set_orientation: gtk::Orientation::Vertical,
-            set_margin_all: 5,
-            set_spacing: 5,
-            set_visible: watch! { model.fetching },
-            set_hexpand: true,
-            set_vexpand: true,
-            append = &gtk::Label {
-              set_label: "Fetching weather..."
-            },
-            append = spinner = &gtk::Spinner {
-            }
-          },
+              // Forecast data.
+              append = weather = &gtk::Box {
+                set_orientation: gtk::Orientation::Vertical,
+                set_margin_all: 5,
+                set_spacing: 5,
+                set_visible: watch! { !model.fetching },
+                factory!(model.forecast)
+              },
 
-          // Reload button.
-          append = reload = &gtk::Button {
-            set_label: "Refresh",
-            set_sensitive: watch! { !model.fetching },
-            set_halign: gtk::Align::Center,
-            set_css_classes: &["refresh"],
-            connect_clicked[sender = components.async_handler.sender()] => move |_| {
-              sender.blocking_send(AsyncHandlerMsg::Fetch).expect("Receiver dropped");
-            }
+              // Fetching container.
+              append = spinner_box = &gtk::Box {
+                set_orientation: gtk::Orientation::Vertical,
+                set_margin_all: 5,
+                set_spacing: 5,
+                set_visible: watch! { model.fetching },
+                set_hexpand: true,
+                set_vexpand: true,
+                append = &gtk::Label {
+                  set_label: "Fetching weather..."
+                },
+                append = spinner = &gtk::Spinner {
+                }
+              },
           },
+        },
 
-          append = status = &gtk::Statusbar {
-            set_halign: gtk::Align::Fill,
-          },
-        }
-      }
+        // Refresh button.
+        append = reload = &gtk::Button {
+          set_label: "Refresh",
+          set_sensitive: watch! { !model.fetching },
+          set_halign: gtk::Align::Center,
+          set_css_classes: &["refresh"],
+          connect_clicked[sender = components.async_handler.sender()] => move |_| {
+            sender.blocking_send(AsyncHandlerMsg::Fetch).expect("Receiver dropped");
+          }
+        },
+
+        // Status bar.
+        append = status = &gtk::Statusbar {
+          set_halign: gtk::Align::Fill,
+        },
+      },
     }
   }
 
