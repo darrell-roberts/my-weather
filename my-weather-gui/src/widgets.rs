@@ -79,9 +79,8 @@ impl Widgets<AppModel, ()> for AppWidgets {
   }
 
   fn pre_view() {
-    let ctx_id = status.context_id("state");
     status.push(
-      ctx_id,
+      status.context_id("state"),
       if model.fetching {
         "Loading weather..."
       } else {
