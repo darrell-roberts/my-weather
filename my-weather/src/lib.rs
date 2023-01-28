@@ -1,11 +1,11 @@
 //! Gets weather forecast for Weather Canada RSS feed.
-use serde::{de::Visitor, Deserialize, Deserializer};
+use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 use thiserror::Error;
 
 static WEATHER_FEED: &str = "https://weather.gc.ca/rss/city/qc-58_e.xml";
 
 /// Weather Forecast
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct ForeCast(Feed);
 
 impl std::fmt::Display for ForeCast {
@@ -32,14 +32,14 @@ impl ForeCast {
 }
 
 /// RSS Feed Element.
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 struct Feed {
   #[serde(rename = "entry", deserialize_with = "deserialize_entries")]
   entries: Vec<Entry>,
 }
 
 /// RSS Entry Element.
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Serialize)]
 pub struct Entry {
   pub title: String,
   // link: String,
@@ -61,13 +61,13 @@ impl std::fmt::Display for Entry {
 }
 
 // RSS Category Element.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Category {
   pub term: Term,
 }
 
 /// RSS Category term attribute.
-#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub enum Term {
   #[serde(rename = "Current Conditions")]
   Current,
