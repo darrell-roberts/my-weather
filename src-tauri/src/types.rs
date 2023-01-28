@@ -1,11 +1,13 @@
 use my_weather::{Entry, Term};
+use serde::{Serialize, Serializer};
 use std::{collections::HashMap, marker::PhantomData};
 
 use crate::parsers::{parse_current_forecast, parse_forecast};
 
 /// Wrapper type for weather entry elements allowing
 /// classifying and grouping entries.
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
+#[serde(tag = "type", content = "content")]
 pub enum ForecastEntry {
   Warning(Entry),
   Current(CurrentForecastWithEntry),
@@ -28,7 +30,9 @@ impl ForecastEntry {
 
     match self {
       Self::Warning(entry) => remap_html(&entry.summary),
-      Self::Current(CurrentForecastWithEntry { entry, .. }) => remap_html(&entry.summary),
+      Self::Current(CurrentForecastWithEntry { entry, .. }) => {
+        remap_html(&entry.summary)
+      }
       Self::Future { forecast, .. } => {
         let day = forecast
           .iter()
@@ -87,7 +91,9 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForecastEntry> {
       Term::Warnings => result.push(ForecastEntry::Warning(entry)),
       Term::ForeCast => match Day::try_from(&entry) {
         Ok(key) => {
-          if let Some(ForecastEntry::Future { forecast, .. }) = day_map.get_mut(&key) {
+          if let Some(ForecastEntry::Future { forecast, .. }) =
+            day_map.get_mut(&key)
+          {
             forecast.extend(
               entry
                 .title
@@ -131,9 +137,10 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForecastEntry> {
   // Future forecasts need to be arranged back into their original order.
   let mut sorted = day_map.into_values().collect::<Vec<_>>();
   sorted.sort_by(|a, b| match (a, b) {
-    (ForecastEntry::Future { sequence: a, .. }, ForecastEntry::Future { sequence: b, .. }) => {
-      a.cmp(b)
-    }
+    (
+      ForecastEntry::Future { sequence: a, .. },
+      ForecastEntry::Future { sequence: b, .. },
+    ) => a.cmp(b),
     _ => std::cmp::Ordering::Equal,
   });
 
@@ -164,17 +171,32 @@ impl TryFrom<&Entry> for Day {
   }
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize)]
 pub enum Celsius {}
 
 #[derive(Debug, Copy, Clone)]
 pub enum Fahrenheit {}
 
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone, Serialize)]
+#[serde(tag = "type", content = "content")]
 pub enum Temperature<Unit> {
+  #[serde(serialize_with = "serialize_temperature")]
   High(f32, PhantomData<Unit>),
+  #[serde(serialize_with = "serialize_temperature")]
   Low(f32, PhantomData<Unit>),
+  #[serde(serialize_with = "serialize_temperature")]
   Current(f32, PhantomData<Unit>),
+}
+
+fn serialize_temperature<S, Unit>(
+  temperature: &f32,
+  _p: &PhantomData<Unit>,
+  serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+  S: Serializer,
+{
+  serializer.serialize_f32(*temperature)
 }
 
 impl PartialEq for Temperature<Celsius> {
@@ -187,9 +209,15 @@ impl From<Temperature<Celsius>> for Temperature<Fahrenheit> {
   fn from(value: Temperature<Celsius>) -> Self {
     let convert = |n| (n * 2.) + 30.;
     match value {
-      Temperature::High(n, _) => Temperature::<Fahrenheit>::High(convert(n), PhantomData),
-      Temperature::Low(n, _) => Temperature::<Fahrenheit>::Low(convert(n), PhantomData),
-      Temperature::Current(n, _) => Temperature::<Fahrenheit>::Current(convert(n), PhantomData),
+      Temperature::High(n, _) => {
+        Temperature::<Fahrenheit>::High(convert(n), PhantomData)
+      }
+      Temperature::Low(n, _) => {
+        Temperature::<Fahrenheit>::Low(convert(n), PhantomData)
+      }
+      Temperature::Current(n, _) => {
+        Temperature::<Fahrenheit>::Current(convert(n), PhantomData)
+      }
     }
   }
 }
@@ -216,13 +244,13 @@ impl std::fmt::Display for Temperature<Fahrenheit> {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct ForecastWithEntry {
   pub forecast: Forecast,
   pub entry: Entry,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Forecast {
   pub celsius: Temperature<Celsius>,
   pub fahrenheit: Temperature<Fahrenheit>,
@@ -231,13 +259,13 @@ pub struct Forecast {
   pub day_of_week: DayOfWeek,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize)]
 pub enum DayNight {
   Day,
   Night,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Serialize)]
 pub enum DayOfWeek {
   Monday,
   Tuesday,
@@ -246,20 +274,6 @@ pub enum DayOfWeek {
   Friday,
   Saturday,
   Sunday,
-}
-
-impl DayOfWeek {
-  pub fn as_str(&self) -> &str {
-    match self {
-      Self::Monday => "Monday",
-      Self::Tuesday => "Tuesday",
-      Self::Wednesday => "Wednesday",
-      Self::Thursday => "Thursday",
-      Self::Friday => "Friday",
-      Self::Saturday => "Saturday",
-      Self::Sunday => "Sunday",
-    }
-  }
 }
 
 #[derive(Debug)]
@@ -275,13 +289,13 @@ impl std::str::FromStr for Forecast {
   }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct CurrentForecastWithEntry {
   pub current: CurrentForecast,
   pub entry: Entry,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct CurrentForecast {
   pub celsius: Temperature<Celsius>,
   pub fahrenheit: Temperature<Fahrenheit>,

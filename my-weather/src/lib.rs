@@ -2,6 +2,9 @@
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 use thiserror::Error;
 
+mod parsers;
+pub mod types;
+
 static WEATHER_FEED: &str = "https://weather.gc.ca/rss/city/qc-58_e.xml";
 
 /// Weather Forecast

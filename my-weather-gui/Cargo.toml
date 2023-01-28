@@ -13,4 +13,3 @@ relm4-components = "0.4"
 my-weather = { path = "../my-weather", features = ["async"] }
 tokio = { version = "1" }
 chrono = "0.4"
-nom = "7.1"

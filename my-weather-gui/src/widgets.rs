@@ -1,10 +1,9 @@
 //! Main application window widgets.
-use crate::{
-  handlers::AsyncHandlerMsg,
-  types::{DayNight, ForecastEntry, ForecastWithEntry, Temperature},
-  AppModel, AppMsg, ForecastEntryAndTempUnit, TempUnit,
-};
+use crate::{handlers::AsyncHandlerMsg, AppModel, AppMsg, ForecastEntryAndTempUnit, TempUnit};
 use gtk::pango::EllipsizeMode;
+use my_weather::types::{
+  CurrentForecastWithEntry, DayNight, ForecastEntry, ForecastWithEntry, Temperature,
+};
 use relm4::{
   factory::{collections::FactoryVec, FactoryPrototype},
   gtk::prelude::*,
@@ -192,11 +191,7 @@ impl ForecastEntryAndTempUnit {
   }
 
   /// Build widgets for a current forecast.
-  fn init_current_forecast(
-    &self,
-    forecast: &crate::types::CurrentForecastWithEntry,
-    row_container: &gtk::Box,
-  ) {
+  fn init_current_forecast(&self, forecast: &CurrentForecastWithEntry, row_container: &gtk::Box) {
     let day_of_week_container = gtk::Box::builder()
       .orientation(gtk::Orientation::Horizontal)
       .halign(gtk::Align::Center)

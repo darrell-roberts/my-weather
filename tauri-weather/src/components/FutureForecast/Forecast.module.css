@@ -1,0 +1,65 @@
+.current {
+  display: flex;
+  background-color: darkgreen;
+  color: white;
+  flex-grow: 1;
+}
+
+.future {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  flex-grow: 1;
+}
+
+.futureContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  /* background-color: darkslategray; */
+  color: black;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 5px;
+  background-color: gainsboro;
+}
+
+.title {
+  font-weight: bold;
+}
+
+.summary {
+  font-style: italic;
+}
+
+.temperature {
+  width: 60px;
+  text-align: end;
+}
+
+.day {
+  display: flex;
+  background-color: rgb(171, 171, 28);
+  color: black;
+}
+
+.night {
+  display: flex;
+  background-color: rgb(22, 16, 62);
+  color: white;
+}
+
+.dayOfWeek {
+  width: 100px;
+  text-align: left;
+  margin-left: 15px;
+}
+
+.description {
+  font-size: medium;
+  margin-left: 5px;
+  margin-right: 15px;
+}

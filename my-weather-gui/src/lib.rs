@@ -1,23 +1,21 @@
 mod error_dialog;
 mod handlers;
 mod header_menu;
-mod parsers;
-mod types;
 mod widgets;
 
-use crate::{error_dialog::DialogMsg, types::to_forecast};
+use crate::error_dialog::DialogMsg;
 use chrono::Local;
 use error_dialog::ErrorDialogModel;
 use handlers::AsyncHandler;
 use header_menu::HeaderModel;
-use my_weather::ForeCast;
+use my_weather::{
+  types::{to_forecast, ForecastEntry},
+  ForeCast,
+};
 use relm4::{
   factory::collections::FactoryVec, AppUpdate, Model, RelmComponent, RelmMsgHandler, Sender,
 };
-use types::ForecastEntry;
 use widgets::AppWidgets;
-
-pub use types::Celsius;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Default)]
 pub enum TempUnit {

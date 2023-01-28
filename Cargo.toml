@@ -1,2 +1,2 @@
 [workspace]
-members = ["my-weather", "my-weather-gui"]
+members = ["my-weather", "my-weather-gui", "src-tauri"]
