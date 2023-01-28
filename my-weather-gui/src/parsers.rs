@@ -5,64 +5,75 @@ use nom::{
   bytes::complete::{tag, take_until},
   character::complete::{char, digit1, space0},
   combinator::{map, map_res, opt, recognize, value},
-  sequence::{delimited, tuple},
+  error::context,
+  sequence::{delimited, preceded, tuple},
   IResult,
 };
 use std::marker::PhantomData;
 
 /// Parse an optionally signed number.
 fn parse_number(input: &str) -> IResult<&str, f32> {
-  let sign = recognize(tuple((
-    alt((tag("minus"), tag("plus"), tag("zero"))),
-    space0,
-  )));
+  let sign = context("sign", alt((tag("minus"), tag("plus"), tag("zero"))));
 
-  let num_parse = delimited(
-    space0,
-    tuple((sign, opt(digit1))),
-    alt((char('.'), char(' '))),
-  );
-  map_res(num_parse, |(sign, n): (&str, Option<&str>)| {
-    if sign == "zero" {
-      Ok(0.)
-    } else {
-      n.expect("parsed number")
-        .parse::<f32>()
-        .map(|num| if sign == "minus " { -num } else { num })
-    }
-  })(input)
+  let num_parse = tuple((sign, opt(preceded(char(' '), digit1))));
+
+  context(
+    "parse_number",
+    map_res(num_parse, |(sign, n): (&str, Option<&str>)| {
+      if sign == "zero" {
+        Ok(0.)
+      } else {
+        n.expect("parsed number")
+          .parse::<f32>()
+          .map(|num| if sign == "minus" { -num } else { num })
+      }
+    }),
+  )(input)
 }
 
 fn parse_temp<Unit>(input: &str) -> IResult<&str, Temperature<Unit>> {
-  let high_parser = map(
-    delimited(
-      alt((
-        tag("High"),
-        tag("Temperature steady near"),
-        tag("Temperature rising to"),
-      )),
-      parse_number,
-      opt(char(' ')),
+  let high_parser = context(
+    "high_parser",
+    map(
+      preceded(
+        alt((
+          tag("High "),
+          tag("Temperature steady near "),
+          tag("Temperature rising to "),
+        )),
+        parse_number,
+      ),
+      |n| Temperature::High(n, PhantomData),
     ),
-    |n| Temperature::High(n, PhantomData),
   );
 
-  let low_parser = map(delimited(tag("Low"), parse_number, opt(char(' '))), |n| {
-    Temperature::Low(n, PhantomData)
-  });
+  let low_parser = context(
+    "low_parser",
+    map(
+      preceded(
+        alt((tag("Low "), tag("Temperature falling to "))),
+        parse_number,
+      ),
+      |n| Temperature::Low(n, PhantomData),
+    ),
+  );
 
-  alt((high_parser, low_parser))(input)
+  context("parse_temp", alt((high_parser, low_parser)))(input)
 }
 
 fn parse_description(input: &str) -> IResult<&str, &str> {
-  let parse_tags = alt((
-    take_until("Low"),
-    take_until("High"),
-    take_until("Temperature steady near"),
-    take_until("Temperature rising to"),
-  ));
-  let mut parser = map(parse_tags, |s: &str| s.trim());
-  parser(input)
+  let parse_tags = context(
+    "parse tags",
+    alt((
+      take_until("Low"),
+      take_until("High"),
+      take_until("Temperature steady near"),
+      take_until("Temperature rising to"),
+      take_until("Temperature falling to"),
+    )),
+  );
+  let parser = map(parse_tags, |s: &str| s.trim());
+  context("parse_description", parser)(input)
 }
 
 fn parse_day_night(input: &str) -> IResult<&str, DayNight> {
@@ -149,6 +160,14 @@ mod test {
   }
 
   #[test]
+  fn test_temp() {
+    let test = "Low minus 9.";
+
+    let result = parse_temp::<Celsius>(test).unwrap();
+    assert!(matches!(result.1, Temperature::Low(n, _) if n == -9.));
+  }
+
+  #[test]
   #[ignore]
   fn test_parse_temp() {
     test_parse_entry(
@@ -184,6 +203,14 @@ mod test {
 
     let result = parse_number(test).unwrap();
     assert_eq!(result.1, 0.);
+
+    let test = "zero by morning.";
+    let result = parse_number(test).unwrap();
+    assert_eq!(result.1, 0.);
+
+    let test = "minus 9.";
+    let result = parse_number(test).unwrap();
+    assert_eq!(result.1, -9.);
   }
 
   #[test]
@@ -281,6 +308,34 @@ mod test {
         day_of_week: DayOfWeek::Wednesday,
       } if n == -2. && description == "Chance of flurries."
     ));
+
+    let test = "Friday: Snow. Temperature falling to minus 3 in the afternoon.";
+    let (_, forecast) = parse_forecast::<Celsius>(test).unwrap();
+
+    assert!(matches!(
+        forecast,
+        Forecast {
+            celsius: Temperature::Low(n, _),
+            fahrenheit: Temperature::Low(..),
+            description,
+            day: DayNight::Day,
+            day_of_week: DayOfWeek::Friday,
+        } if n == -3. && description == "Snow."
+    ));
+
+    let test = "Wednesday night: Snow at times heavy. Temperature rising to zero by morning.";
+    let (_, forecast) = parse_forecast::<Celsius>(test).unwrap();
+
+    assert!(matches!(
+        forecast,
+        Forecast {
+            celsius: Temperature::High(n, _),
+            fahrenheit: Temperature::High(..),
+            description,
+            day: DayNight::Night,
+            day_of_week: DayOfWeek::Wednesday,
+        } if n == 0. && description == "Snow at times heavy."
+    ))
   }
 
   #[test]
