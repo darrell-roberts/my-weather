@@ -1,5 +1,8 @@
 //! Gets weather forecast for Weather Canada RSS feed.
-use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
+use serde::{
+  de::{value::StringDeserializer, Visitor},
+  Deserialize, Deserializer, Serialize,
+};
 use thiserror::Error;
 
 mod parsers;
@@ -48,7 +51,33 @@ pub struct Entry {
   // link: String,
   // updated: String,
   pub category: Category,
+  #[serde(deserialize_with = "deserialize_summary")]
   pub summary: String,
+}
+
+fn deserialize_summary<'de, D: Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
+  struct TruncatingStringVisitor;
+
+  impl<'de> Visitor<'de> for TruncatingStringVisitor {
+    type Value = String;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+      formatter.write_str("expecting string")
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+      E: serde::de::Error,
+    {
+      v.rfind("Forecast issued")
+        .map(|index| {
+          let (keep, _) = v.split_at(index);
+          Ok(keep.trim().into())
+        })
+        .unwrap_or_else(|| Ok(v.into()))
+    }
+  }
+  deserializer.deserialize_string(TruncatingStringVisitor)
 }
 
 impl Entry {

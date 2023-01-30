@@ -172,8 +172,8 @@ impl ForecastEntryAndTempUnit {
   /// Build widgets inside a forecast container.
   fn init_forecast(&self, row_container: &gtk::Box) {
     match &self.0 {
-      ForecastEntry::Future { forecast, .. } => {
-        self.init_future_forecast(forecast, row_container);
+      ForecastEntry::Future { day, night, .. } => {
+        self.init_future_forecast(day.as_ref(), night.as_ref(), row_container);
       }
       ForecastEntry::Current(forecast) => {
         self.init_current_forecast(forecast, row_container);
@@ -231,7 +231,12 @@ impl ForecastEntryAndTempUnit {
   }
 
   /// Build widgets for a future forecast.
-  fn init_future_forecast(&self, forecast: &[ForecastWithEntry], row_container: &gtk::Box) {
+  fn init_future_forecast(
+    &self,
+    day: Option<&ForecastWithEntry>,
+    night: Option<&ForecastWithEntry>,
+    row_container: &gtk::Box,
+  ) {
     let day_of_week_container = gtk::Box::builder()
       .orientation(gtk::Orientation::Horizontal)
       .halign(gtk::Align::Center)
@@ -242,7 +247,8 @@ impl ForecastEntryAndTempUnit {
       .halign(gtk::Align::Center)
       .spacing(5)
       .build();
-    if let Some(day) = forecast
+    if let Some(day) = day
+      .or(night)
       .iter()
       .next()
       .map(|fc| fc.forecast.day_of_week.as_str())
@@ -256,15 +262,23 @@ impl ForecastEntryAndTempUnit {
       );
     }
 
-    if forecast.len() == 1 {
-      if forecast[0].forecast.day == DayNight::Day {
-        day_night_container.set_halign(gtk::Align::Start);
-      } else {
-        day_night_container.set_halign(gtk::Align::End);
-      }
+    if day.is_none() {
+      day_night_container.set_halign(gtk::Align::End);
     }
 
-    for ForecastWithEntry { forecast, .. } in forecast {
+    if night.is_none() {
+      day_night_container.set_halign(gtk::Align::Start);
+    }
+
+    // if forecast.len() == 1 {
+    //   if forecast[0].forecast.day == DayNight::Day {
+    //     day_night_container.set_halign(gtk::Align::Start);
+    //   } else {
+    //     day_night_container.set_halign(gtk::Align::End);
+    //   }
+    // }
+
+    for ForecastWithEntry { forecast, .. } in day.iter().chain(night.iter()) {
       let temp_string = if self.1 == TempUnit::Celsius {
         format!("{}", &forecast.celsius)
       } else {

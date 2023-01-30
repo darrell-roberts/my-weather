@@ -13,7 +13,8 @@ pub enum ForecastEntry {
   Current(CurrentForecastWithEntry),
   Future {
     sequence: usize,
-    forecast: Vec<ForecastWithEntry>,
+    day: Option<ForecastWithEntry>,
+    night: Option<ForecastWithEntry>,
   },
 }
 
@@ -31,31 +32,22 @@ impl ForecastEntry {
     match self {
       Self::Warning(entry) => remap_html(&entry.summary),
       Self::Current(CurrentForecastWithEntry { entry, .. }) => remap_html(&entry.summary),
-      Self::Future { forecast, .. } => {
-        let day = forecast
-          .iter()
-          .find(|fc| matches!(fc.forecast.day, DayNight::Day));
-        let night = forecast
-          .iter()
-          .find(|fc| matches!(fc.forecast.day, DayNight::Night));
-
-        match (day, night) {
-          (Some(d), Some(n)) => {
-            format!(
-              "<b>Day:</b>\n{}\n\n<b>Night:</b>\n{}",
-              remap_html(&d.entry.summary),
-              remap_html(&n.entry.summary)
-            )
-          }
-          (Some(d), None) => {
-            format!("<b>Day:</b>\n{}", remap_html(&d.entry.summary),)
-          }
-          (None, Some(n)) => {
-            format!("<b>Night:</b>\n{}", remap_html(&n.entry.summary))
-          }
-          (None, None) => String::new(),
+      Self::Future { day, night, .. } => match (day, night) {
+        (Some(d), Some(n)) => {
+          format!(
+            "<b>Day:</b>\n{}\n\n<b>Night:</b>\n{}",
+            remap_html(&d.entry.summary),
+            remap_html(&n.entry.summary)
+          )
         }
-      }
+        (Some(d), None) => {
+          format!("<b>Day:</b>\n{}", remap_html(&d.entry.summary),)
+        }
+        (None, Some(n)) => {
+          format!("<b>Night:</b>\n{}", remap_html(&n.entry.summary))
+        }
+        (None, None) => String::new(),
+      },
     }
   }
 }
@@ -89,40 +81,54 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForecastEntry> {
       Term::Warnings => result.push(ForecastEntry::Warning(entry)),
       Term::ForeCast => match Day::try_from(&entry) {
         Ok(key) => {
-          if let Some(ForecastEntry::Future { forecast, .. }) = day_map.get_mut(&key) {
-            forecast.extend(
-              entry
-                .title
-                .as_str()
-                .parse()
-                .ok()
-                .map(|fc| ForecastWithEntry {
-                  entry,
-                  forecast: fc,
-                })
-                .into_iter(),
-            )
+          if let Some(ForecastEntry::Future { day, night, .. }) = day_map.get_mut(&key) {
+            match entry.title.as_str().parse::<Forecast>() {
+              Ok(fc) => {
+                if fc.day == DayNight::Day {
+                  *day = Some(ForecastWithEntry {
+                    forecast: fc,
+                    entry,
+                  });
+                } else {
+                  *night = Some(ForecastWithEntry {
+                    forecast: fc,
+                    entry,
+                  });
+                }
+              }
+              Err(err) => eprintln!("failed to parse forecast: {err:?}"),
+            }
           } else {
-            let mut forecast = vec![];
-            forecast.extend(
-              entry
-                .title
-                .as_str()
-                .parse()
-                .ok()
-                .map(|fc| ForecastWithEntry {
-                  entry,
-                  forecast: fc,
-                })
-                .into_iter(),
-            );
-            day_map.insert(
-              key,
-              ForecastEntry::Future {
-                sequence: index,
-                forecast,
-              },
-            );
+            match entry.title.as_str().parse::<Forecast>() {
+              Ok(fc) => {
+                if fc.day == DayNight::Day {
+                  day_map.insert(
+                    key,
+                    ForecastEntry::Future {
+                      sequence: index,
+                      day: Some(ForecastWithEntry {
+                        forecast: fc,
+                        entry,
+                      }),
+                      night: None,
+                    },
+                  );
+                } else {
+                  day_map.insert(
+                    key,
+                    ForecastEntry::Future {
+                      sequence: index,
+                      day: None,
+                      night: Some(ForecastWithEntry {
+                        forecast: fc,
+                        entry,
+                      }),
+                    },
+                  );
+                }
+              }
+              Err(err) => eprintln!("failed to parse forecast: {err:?}"),
+            }
           }
         }
         Err(_) => eprintln!("No day from forecast parsed: {}", entry.title),

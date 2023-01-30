@@ -22,7 +22,8 @@ export type CurrentEntry = {
 }
 
 export type FutureEntry = {
-  forecast: FutureDayNight[]
+  day: FutureDayNight,
+  night: FutureDayNight,
 }
 
 export type FutureDayNight = {
@@ -32,7 +33,8 @@ export type FutureDayNight = {
     day: "Day" | "Night",
     day_of_week: DayOfWeek,
     description: string,
-  }
+  },
+  entry: Entry
 }
 
 export type Temperature = {
@@ -46,7 +48,3 @@ export type DayOfWeek = "Monday"
   | "Friday"
   | "Saturday"
   | "Sunday";
-
-
-export const getDay = (entry: FutureEntry) => entry.forecast.find(el => el.forecast.day === "Day");
-export const getNight = (entry: FutureEntry) => entry.forecast.find(el => el.forecast.day === "Night");

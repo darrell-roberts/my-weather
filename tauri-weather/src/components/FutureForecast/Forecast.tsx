@@ -1,4 +1,5 @@
-import { CurrentEntry, ForecastEntry, FutureEntry, getDay, getNight } from "../../common/types";
+import { CurrentEntry, ForecastEntry, FutureEntry, } from "../../common/types";
+import Tooltip from "../Tooltip/Tooltip";
 import classes from "./Forecast.module.css";
 
 type FutureForecastProps = {
@@ -7,43 +8,51 @@ type FutureForecastProps = {
 }
 
 export default function FutureForecast({ entry, unit = "Celsius" }: FutureForecastProps) {
-  function renderTemperature(t: number): string {
+  function renderTemperature(t: number, fractionDigits?: boolean): string {
     if (unit === "Celsius") {
-      return `${t.toFixed(1)}°C`
+      return `${fractionDigits ? t.toFixed(1) : t}°`
     } else {
-      return `${t.toFixed(0)}°F`
+      return `${t}°F`
     }
   }
 
   const renderCurrent = (entry: CurrentEntry) => (
-    <div className={classes.futureContainer}>
-      <div className={classes.dayOfWeek}><span>Current</span></div>
-      <div className={classes.current}>
-        <div className={classes.temperature}>{renderTemperature(entry.current.celsius.content)}</div>
-        <div className={classes.description}>{entry.current.description}</div>
+    <Tooltip message={entry.entry.summary}>
+      <div className={classes.futureContainer}>
+        <div className={classes.dayOfWeek}><span>Current</span></div>
+        <div className={classes.current}>
+          <div className={classes.temperature}>{renderTemperature(entry.current.celsius.content, true)}</div>
+          <div className={classes.description}>{entry.current.description}</div>
+        </div>
       </div>
-    </div>
+    </Tooltip>
   );
 
   function renderFuture(entry: FutureEntry) {
-    const day = getDay(entry);
-    const night = getNight(entry);
+    const dayOfweek = entry.day?.forecast.day_of_week ?? entry.night?.forecast.day_of_week;
     return (
       <div className={classes.futureContainer}>
         <div className={classes.dayOfWeek}>
-          <span>{entry.forecast[0].forecast["day_of_week"]}
+          <span>{dayOfweek}
           </span>
         </div>
         <div className={classes.future}>
-          {day && <div className={classes.day}>
-            <div className={classes.temperature}>{renderTemperature(day.forecast.celsius.content)}</div>
-            <div className={classes.description}>{day.forecast.description}</div>
-          </div>
+          {entry.day &&
+            <Tooltip message={entry.day.entry.summary}>
+              <div className={classes.day}>
+                <div className={classes.temperature}>{renderTemperature(entry.day.forecast.celsius.content)}</div>
+                <div className={classes.description}>{entry.day.forecast.description}</div>
+              </div>
+            </Tooltip>
+
           }
-          {night && <div className={classes.night}>
-            <div className={classes.temperature}>{renderTemperature(night.forecast.celsius.content)}</div>
-            <div className={classes.description}>{night.forecast.description}</div>
-          </div>
+          {entry.night &&
+            <Tooltip message={entry.night.entry.summary}>
+              <div className={classes.night}>
+                <div className={classes.temperature}>{renderTemperature(entry.night.forecast.celsius.content)}</div>
+                <div className={classes.description}>{entry.night.forecast.description}</div>
+              </div>
+            </Tooltip>
           }
         </div>
       </div>
