@@ -2,16 +2,23 @@ import { ReactNode } from "react"
 import classes from "./Tooltip.module.css";
 
 type TooltipProps = {
-  message: string
-  children: ReactNode
+  message?: string;
+  htmlMessage?: string;
+  children: ReactNode;
 }
 
-function Tooltip({ message, children }: TooltipProps) {
+function Tooltip({ message, children, htmlMessage }: TooltipProps) {
 
   return (
     <div className={classes.tooltip}>
       {children}
-      <span className={classes.tooltiptext} dangerouslySetInnerHTML={{ __html: message }} />
+      {htmlMessage &&
+        <span className={classes.tooltiptext} dangerouslySetInnerHTML={{ __html: htmlMessage }} />
+      }
+      {
+        message &&
+        <span className={classes.tooltiptext}>{message}</span>
+      }
     </div>
   )
 }

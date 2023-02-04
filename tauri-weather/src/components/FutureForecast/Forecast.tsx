@@ -17,7 +17,7 @@ export default function FutureForecast({ entry, unit = "Celsius" }: FutureForeca
   }
 
   const renderCurrent = (entry: CurrentEntry) => (
-    <Tooltip message={entry.entry.summary}>
+    <Tooltip htmlMessage={entry.entry.summary}>
       <div className={classes.futureContainer}>
         <div className={classes.dayOfWeek}><span>Current</span></div>
         <div className={classes.current}>
