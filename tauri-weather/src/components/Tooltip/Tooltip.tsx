@@ -7,20 +7,16 @@ type TooltipProps = {
   children: ReactNode;
 }
 
-function Tooltip({ message, children, htmlMessage }: TooltipProps) {
-
-  return (
-    <div className={classes.tooltip}>
-      {children}
-      {htmlMessage &&
-        <span className={classes.tooltiptext} dangerouslySetInnerHTML={{ __html: htmlMessage }} />
-      }
-      {
-        message &&
-        <span className={classes.tooltiptext}>{message}</span>
-      }
-    </div>
-  )
-}
+const Tooltip = ({ message, children, htmlMessage }: TooltipProps) =>
+  <div className={classes.tooltip}>
+    {children}
+    {htmlMessage &&
+      <span className={classes.tooltiptext} dangerouslySetInnerHTML={{ __html: htmlMessage }} />
+    }
+    {
+      message &&
+      <span className={classes.tooltiptext}>{message}</span>
+    }
+  </div>
 
 export default Tooltip;
