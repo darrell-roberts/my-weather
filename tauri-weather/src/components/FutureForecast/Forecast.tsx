@@ -1,4 +1,4 @@
-import { CurrentEntry, ForecastEntry, FutureEntry, } from "../../common/types";
+import { CurrentEntry, ForecastEntry, FutureEntry, WarningEntry, } from "../../common/types";
 import Tooltip from "../Tooltip/Tooltip";
 import classes from "./Forecast.module.css";
 
@@ -59,10 +59,21 @@ export default function FutureForecast({ entry, unit = "Celsius" }: FutureForeca
     )
   }
 
+  function renderWarning(entry: WarningEntry) {
+    return (
+      <div className={classes.warningContainer}>
+        <Tooltip message={entry.summary}>
+          <div>{entry.title}</div>
+        </Tooltip>
+      </div>
+    )
+  }
+
   function renderEntry(entry: ForecastEntry) {
     switch (entry.type) {
       case "Current": return renderCurrent(entry.content);
       case "Future": return renderFuture(entry.content);
+      case "Warning": return renderWarning(entry.content);
     }
   }
 

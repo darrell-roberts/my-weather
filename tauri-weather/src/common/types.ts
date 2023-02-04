@@ -14,7 +14,8 @@ export interface Category {
 
 export type ForecastEntry =
   { type: "Current"; content: CurrentEntry }
-  | { type: "Future"; content: FutureEntry };
+  | { type: "Future"; content: FutureEntry }
+  | { type: "Warning"; content: WarningEntry };
 
 export type CurrentEntry = {
   entry: { title: string, summary: string };
@@ -48,3 +49,8 @@ export type DayOfWeek = "Monday"
   | "Friday"
   | "Saturday"
   | "Sunday";
+
+export type WarningEntry = {
+  title: string;
+  summary: string;
+}

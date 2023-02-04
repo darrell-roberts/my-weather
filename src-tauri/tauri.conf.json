@@ -55,10 +55,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 420,
+        "height": 600,
         "resizable": true,
         "title": "tauri-weather",
-        "width": 430
+        "width": 440
       }
     ]
   }

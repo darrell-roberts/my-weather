@@ -67,6 +67,7 @@ function App() {
       {renderForeCast()}
       <button
         className="refresh"
+        disabled={state.fetching}
         onClick={() => dispatch({ type: "getWeather" })}>
         Refresh
       </button>

@@ -3,6 +3,7 @@
   background-color: darkgreen;
   color: white;
   flex-grow: 1;
+  border-radius: 8px;
 }
 
 .future {
@@ -10,14 +11,15 @@
   flex-direction: column;
   justify-content: space-evenly;
   flex-grow: 1;
+  border-radius: 8px;
 }
 
 .futureContainer {
   display: flex;
   flex-direction: row;
   align-items: center;
-  /* background-color: darkslategray; */
   color: black;
+  border-radius: 8px;
 }
 
 .container {
@@ -25,6 +27,7 @@
   flex-direction: column;
   margin-bottom: 5px;
   background-color: gainsboro;
+  border-radius: 8px;
 }
 
 .title {
@@ -44,12 +47,14 @@
   display: flex;
   background-color: rgb(171, 171, 28);
   color: black;
+  border-radius: 8px;
 }
 
 .night {
   display: flex;
-  background-color: rgb(22, 16, 62);
+  background-color: rgb(72, 62, 136);
   color: white;
+  border-radius: 8px;
 }
 
 .dayOfWeek {
@@ -62,4 +67,11 @@
   font-size: medium;
   margin-left: 5px;
   margin-right: 15px;
+}
+
+.warningContainer {
+  background-color: lightcoral;
+  color: white;
+  font-weight: bold;
+  border-radius: 8px;
 }
