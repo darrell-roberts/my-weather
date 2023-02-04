@@ -60,8 +60,6 @@ function App() {
     }
   }
 
-  console.log("forecast", state.entries);
-
   return (
     <div className="App">
       {renderForeCast()}

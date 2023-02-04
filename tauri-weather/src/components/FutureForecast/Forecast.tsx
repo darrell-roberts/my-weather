@@ -21,15 +21,21 @@ export default function FutureForecast({ entry, unit = "Celsius" }: FutureForeca
       <div className={classes.futureContainer}>
         <div className={classes.dayOfWeek}><span>Current</span></div>
         <div className={classes.current}>
-          <div className={classes.temperature}>{renderTemperature(entry.current.celsius.content, true)}</div>
-          <div className={classes.description}>{entry.current.description}</div>
+          <div className={classes.temperature}>
+            {renderTemperature(entry.current.celsius.content, true)}
+          </div>
+          <div className={classes.description}>
+            {entry.current.description}
+          </div>
         </div>
       </div>
     </Tooltip>
   );
 
   function renderFuture(entry: FutureEntry) {
-    const dayOfweek = entry.day?.forecast.day_of_week ?? entry.night?.forecast.day_of_week;
+    const dayOfweek = entry.day?.forecast.day_of_week
+      ?? entry.night?.forecast.day_of_week;
+
     return (
       <div className={classes.futureContainer}>
         <div className={classes.dayOfWeek}>
@@ -40,17 +46,24 @@ export default function FutureForecast({ entry, unit = "Celsius" }: FutureForeca
           {entry.day &&
             <Tooltip message={entry.day.entry.summary}>
               <div className={classes.day}>
-                <div className={classes.temperature}>{renderTemperature(entry.day.forecast.celsius.content)}</div>
-                <div className={classes.description}>{entry.day.forecast.description}</div>
+                <div className={classes.temperature}>
+                  {renderTemperature(entry.day.forecast.celsius.content)}
+                </div>
+                <div className={classes.description}>
+                  {entry.day.forecast.description}
+                </div>
               </div>
             </Tooltip>
-
           }
           {entry.night &&
             <Tooltip message={entry.night.entry.summary}>
               <div className={classes.night}>
-                <div className={classes.temperature}>{renderTemperature(entry.night.forecast.celsius.content)}</div>
-                <div className={classes.description}>{entry.night.forecast.description}</div>
+                <div className={classes.temperature}>
+                  {renderTemperature(entry.night.forecast.celsius.content)}
+                </div>
+                <div className={classes.description}>
+                  {entry.night.forecast.description}
+                </div>
               </div>
             </Tooltip>
           }
@@ -59,17 +72,14 @@ export default function FutureForecast({ entry, unit = "Celsius" }: FutureForeca
     )
   }
 
-  function renderWarning(entry: WarningEntry) {
-    return (
-      <div className={classes.warningContainer}>
-        <Tooltip message={entry.summary}>
-          <div>{entry.title}</div>
-        </Tooltip>
-      </div>
-    )
-  }
+  const renderWarning = (entry: WarningEntry) =>
+    <div className={classes.warningContainer}>
+      <Tooltip message={entry.summary}>
+        <div>{entry.title}</div>
+      </Tooltip>
+    </div>
 
-  function renderEntry(entry: ForecastEntry) {
+  const renderEntry = (entry: ForecastEntry) => {
     switch (entry.type) {
       case "Current": return renderCurrent(entry.content);
       case "Future": return renderFuture(entry.content);

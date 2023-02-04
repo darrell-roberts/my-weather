@@ -1,15 +1,15 @@
-export interface Forecast {
-  entry: Entry[]
+export type Forecast = {
+  entry: Entry[];
 }
 
-export interface Entry {
+export type Entry = {
   title: string;
   summary: string;
   category: Category;
 }
 
 export interface Category {
-  term: "Weather Forecasts" | "Current Conditions"
+  term: "Weather Forecasts" | "Current Conditions";
 }
 
 export type ForecastEntry =
@@ -19,27 +19,31 @@ export type ForecastEntry =
 
 export type CurrentEntry = {
   entry: { title: string, summary: string };
-  current: { celsius: Temperature, fahrenheit: Temperature, description: string }
+  current: {
+    celsius: Temperature,
+    fahrenheit: Temperature,
+    description: string
+  };
 }
 
 export type FutureEntry = {
-  day: FutureDayNight,
-  night: FutureDayNight,
+  day: FutureDayNight;
+  night: FutureDayNight;
 }
 
 export type FutureDayNight = {
   forecast: {
-    celsius: Temperature,
-    fahrenheit: Temperature,
-    day: "Day" | "Night",
-    day_of_week: DayOfWeek,
-    description: string,
+    celsius: Temperature;
+    fahrenheit: Temperature;
+    day: "Day" | "Night";
+    day_of_week: DayOfWeek;
+    description: string;
   },
-  entry: Entry
+  entry: Entry;
 }
 
 export type Temperature = {
-  type: "High" | "Low" | "Current", content: number
+  type: "High" | "Low" | "Current", content: number;
 }
 
 export type DayOfWeek = "Monday"
