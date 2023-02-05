@@ -43,8 +43,10 @@ temperature {
   border-radius: 100%;
   padding: 2px 2px 2px 2px;
   color: white;
-  min-width: 3em;
-  min-height: 3em;
+  min-width: 35px;
+  min-height: 35px;
+  /* min-width: 3em; */
+  /* min-height: 3em; */
 }
 
 temperature.high {
@@ -62,14 +64,17 @@ temperature.current {
 
 .dayofweek {
   font-weight: bold;
+  min-width: 110px;
+  text-align: start;
 }
 
 description {
   border-radius: 20px;
   min-width: 10em;
   background-color: antiquewhite;
-  padding-left: 1em;
-  padding-right: 1em;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  margin-left: 5px;
 }
 
 description.day {

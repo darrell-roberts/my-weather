@@ -2,7 +2,7 @@
 use crate::{handlers::AsyncHandlerMsg, AppModel, AppMsg, ForecastEntryAndTempUnit, TempUnit};
 use gtk::pango::EllipsizeMode;
 use my_weather::types::{
-  CurrentForecastWithEntry, DayNight, ForecastEntry, ForecastWithEntry, Temperature,
+  CurrentForecastWithEntry, DayNight, Forecast, ForecastEntry, ForecastWithEntry, Temperature,
 };
 use relm4::{
   factory::{collections::FactoryVec, FactoryPrototype},
@@ -17,7 +17,7 @@ impl Widgets<AppModel, ()> for AppWidgets {
         set_title: Some("My Weather"),
         set_titlebar: Some(components.header.root_widget()),
         set_resizable: true,
-        set_default_size: args!(400, 800),
+        set_default_size: args!(400, 750),
 
         set_child = window = Some(&gtk::Box) {
           set_orientation: gtk::Orientation::Vertical,
@@ -118,10 +118,7 @@ impl FactoryPrototype for ForecastEntryAndTempUnit {
       .spacing(5)
       .build();
 
-    let mut row_container = gtk::Box::builder()
-      .css_name("item")
-      .orientation(gtk::Orientation::Vertical)
-      .spacing(5);
+    let mut row_container = gtk::Box::builder().css_name("item").spacing(5);
 
     match self.0 {
       ForecastEntry::Current(_) => {
@@ -140,8 +137,6 @@ impl FactoryPrototype for ForecastEntryAndTempUnit {
     container.append(&row_container);
     let separator = gtk::Separator::builder()
       .orientation(gtk::Orientation::Horizontal)
-      .halign(gtk::Align::Fill)
-      .hexpand(true)
       .build();
 
     container.append(&separator);
@@ -237,30 +232,25 @@ impl ForecastEntryAndTempUnit {
     night: Option<&ForecastWithEntry>,
     row_container: &gtk::Box,
   ) {
-    let day_of_week_container = gtk::Box::builder()
-      .orientation(gtk::Orientation::Horizontal)
-      .halign(gtk::Align::Center)
-      .build();
-    row_container.append(&day_of_week_container);
-    let day_night_container = gtk::Box::builder()
-      .orientation(gtk::Orientation::Horizontal)
-      .halign(gtk::Align::Center)
-      .spacing(5)
-      .build();
     if let Some(day) = day
       .or(night)
       .iter()
       .next()
       .map(|fc| fc.forecast.day_of_week.as_str())
     {
-      day_of_week_container.append(
+      row_container.append(
         &gtk::Label::builder()
           .label(day)
+          .halign(gtk::Align::Center)
           .css_classes(vec!["dayofweek".into()])
           .tooltip_markup(&self.0.summary())
           .build(),
       );
     }
+    let day_night_container = gtk::Box::builder()
+      .orientation(gtk::Orientation::Horizontal)
+      .spacing(5)
+      .build();
 
     if day.is_none() {
       day_night_container.set_halign(gtk::Align::End);
@@ -270,46 +260,48 @@ impl ForecastEntryAndTempUnit {
       day_night_container.set_halign(gtk::Align::Start);
     }
 
-    // if forecast.len() == 1 {
-    //   if forecast[0].forecast.day == DayNight::Day {
-    //     day_night_container.set_halign(gtk::Align::Start);
-    //   } else {
-    //     day_night_container.set_halign(gtk::Align::End);
-    //   }
-    // }
-
     for ForecastWithEntry { forecast, .. } in day.iter().chain(night.iter()) {
-      let temp_string = if self.1 == TempUnit::Celsius {
-        format!("{}", &forecast.celsius)
-      } else {
-        format!("{}", &forecast.fahrenheit)
-      };
-      let high_low_label = gtk::Label::builder()
-        .css_name("temperature")
-        .css_classes(vec![match &forecast.celsius {
-          Temperature::High(..) => "high".into(),
-          Temperature::Low(..) => "low".into(),
-          Temperature::Current(..) => "current".into(),
-        }])
-        .label(&temp_string);
-
-      let mut day_night_label = gtk::Label::builder()
-        .css_name("description")
-        .ellipsize(EllipsizeMode::End)
-        .tooltip_text(&forecast.description)
-        .label(&forecast.description);
-      match forecast.day {
-        DayNight::Day => {
-          day_night_label = day_night_label
-            .css_classes(vec!["day".into()])
-            .halign(gtk::Align::Start)
-        }
-        DayNight::Night => day_night_label = day_night_label.css_classes(vec!["night".into()]),
-      }
-
-      day_night_container.append(&high_low_label.build());
-      day_night_container.append(&day_night_label.build());
+      day_night_container.append(&self.build_temp_and_title(forecast));
     }
     row_container.append(&day_night_container);
+  }
+
+  fn build_temp_and_title(&self, forecast: &Forecast) -> gtk::Box {
+    let temp_label_container = gtk::Box::builder()
+      .orientation(gtk::Orientation::Horizontal)
+      .build();
+
+    let temp_string = if self.1 == TempUnit::Celsius {
+      format!("{}", &forecast.celsius)
+    } else {
+      format!("{}", &forecast.fahrenheit)
+    };
+    let high_low_label = gtk::Label::builder()
+      .css_name("temperature")
+      .css_classes(vec![match &forecast.celsius {
+        Temperature::High(..) => "high".into(),
+        Temperature::Low(..) => "low".into(),
+        Temperature::Current(..) => "current".into(),
+      }])
+      .label(&temp_string);
+
+    let mut day_night_label = gtk::Label::builder()
+      .css_name("description")
+      .ellipsize(EllipsizeMode::End)
+      .tooltip_text(&forecast.description)
+      .label(&forecast.description);
+    match forecast.day {
+      DayNight::Day => {
+        day_night_label = day_night_label
+          .css_classes(vec!["day".into()])
+          .halign(gtk::Align::Start)
+      }
+      DayNight::Night => day_night_label = day_night_label.css_classes(vec!["night".into()]),
+    }
+
+    temp_label_container.append(&high_low_label.build());
+    temp_label_container.append(&day_night_label.build());
+
+    temp_label_container
   }
 }

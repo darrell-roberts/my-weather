@@ -1,8 +1,5 @@
 //! Gets weather forecast for Weather Canada RSS feed.
-use serde::{
-  de::{value::StringDeserializer, Visitor},
-  Deserialize, Deserializer, Serialize,
-};
+use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 use thiserror::Error;
 
 mod parsers;
