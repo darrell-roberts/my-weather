@@ -187,32 +187,20 @@ impl ForecastEntryAndTempUnit {
 
   /// Build widgets for a current forecast.
   fn init_current_forecast(&self, forecast: &CurrentForecastWithEntry, row_container: &gtk::Box) {
-    let day_of_week_container = gtk::Box::builder()
-      .orientation(gtk::Orientation::Horizontal)
-      .halign(gtk::Align::Center)
-      .build();
-    day_of_week_container.append(
-      &gtk::Label::builder()
-        .label("Current")
-        .css_classes(vec!["dayofweek".into()])
-        .tooltip_markup(&self.0.summary())
-        .build(),
-    );
     let info_container = gtk::Box::builder()
       .orientation(gtk::Orientation::Horizontal)
       .halign(gtk::Align::Center)
-      .spacing(5)
       .build();
-    let temp_string = if self.1 == TempUnit::Celsius {
-      format!("{}", forecast.current.celsius)
-    } else {
-      format!("{}", forecast.current.fahrenheit)
-    };
+
     info_container.append(
       &gtk::Label::builder()
         .css_name("temperature")
         .css_classes(vec!["current".into()])
-        .label(&temp_string)
+        .label(&if self.1 == TempUnit::Celsius {
+          format!("{}", forecast.current.celsius)
+        } else {
+          format!("{}", forecast.current.fahrenheit)
+        })
         .build(),
     );
     info_container.append(
@@ -221,7 +209,6 @@ impl ForecastEntryAndTempUnit {
         .label(&forecast.current.description)
         .build(),
     );
-    row_container.append(&day_of_week_container);
     row_container.append(&info_container);
   }
 

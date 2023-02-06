@@ -65,7 +65,7 @@ temperature.current {
 .dayofweek {
   font-weight: bold;
   min-width: 110px;
-  text-align: start;
+  /* text-align: start; */
 }
 
 description {
