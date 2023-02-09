@@ -19,6 +19,7 @@ pub enum ForecastEntry {
 }
 
 impl ForecastEntry {
+  /// Convert html to pango doc.
   pub fn summary(&self) -> String {
     let remap_html = |input: &str| {
       input

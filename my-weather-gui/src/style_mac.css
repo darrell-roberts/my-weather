@@ -44,8 +44,8 @@ temperature {
   border-radius: 100%;
   padding: 2px 2px 2px 2px;
   color: white;
-  min-width: 2em;
-  min-height: 2em;
+  min-width: 30px;
+  min-height: 30px;
 }
 
 temperature.high {
@@ -81,4 +81,8 @@ description.day {
 description.night {
   background-color: darkblue;
   color: white;
+}
+
+.tempAndDesc {
+    min-width: 170px;
 }

@@ -6,7 +6,7 @@
     "distDir": "../tauri-weather/dist"
   },
   "package": {
-    "productName": "tauri-weather",
+    "productName": "my-weather",
     "version": "0.1.0"
   },
   "tauri": {
@@ -55,10 +55,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 520,
         "resizable": true,
-        "title": "tauri-weather",
-        "width": 440
+        "title": "my-weather",
+        "width": 523
       }
     ]
   }

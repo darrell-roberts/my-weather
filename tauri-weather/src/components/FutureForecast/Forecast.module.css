@@ -4,6 +4,7 @@
   color: white;
   flex-grow: 1;
   border-radius: 8px;
+  padding: 5px 0 5px 0;
 }
 
 .future {
@@ -48,6 +49,7 @@
   background-color: rgb(171, 171, 28);
   color: black;
   border-radius: 8px;
+  padding: 5px 0 5px 0;
 }
 
 .night {
@@ -55,6 +57,7 @@
   background-color: rgb(72, 62, 136);
   color: white;
   border-radius: 8px;
+  padding: 5px 0 5px 0;
 }
 
 .dayOfWeek {
