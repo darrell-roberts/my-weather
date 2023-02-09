@@ -17,8 +17,14 @@
 }
 
 .status {
-    color: black;
+    color: white;
     margin-top: 20px;
     font-size: .5rem;
     text-align: left;
+}
+
+@media (prefers-color-scheme: light) {
+  .status {
+    color: black;
+  }
 }

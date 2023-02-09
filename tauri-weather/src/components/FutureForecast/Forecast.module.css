@@ -27,7 +27,7 @@
   display: flex;
   flex-direction: column;
   margin-bottom: 5px;
-  background-image: linear-gradient(to right, gainsboro, white);
+  background-image: linear-gradient(to right, gainsboro, black);
   border-radius: 8px;
 }
 
@@ -77,4 +77,10 @@
   color: white;
   font-weight: bold;
   border-radius: 8px;
+}
+
+@media (prefers-color-scheme: light) {
+  .container {
+    background-image: linear-gradient(to right, gainsboro, white);
+  }
 }
