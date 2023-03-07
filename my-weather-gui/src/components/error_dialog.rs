@@ -31,7 +31,6 @@ impl SimpleComponent for ErrorDialogModel {
       connect_response[sender] => move |_, _| {
         sender.input(DialogMsg::Close)
       }
-
     }
   }
 
@@ -59,55 +58,3 @@ impl SimpleComponent for ErrorDialogModel {
     }
   }
 }
-
-// pub struct ErrorDialogWidgets {
-//   dialog: gtk::MessageDialog,
-// }
-
-// impl Widgets<ErrorDialogModel, AppModel> for ErrorDialogWidgets {
-//   type Root = gtk::MessageDialog;
-
-//   fn init_view(
-//     _model: &ErrorDialogModel,
-//     _components: &<ErrorDialogModel as Model>::Components,
-//     sender: relm4::Sender<<ErrorDialogModel as Model>::Msg>,
-//   ) -> Self {
-//     let dialog = gtk::MessageDialog::builder()
-//       .modal(true)
-//       .visible(false)
-//       .message_type(gtk::MessageType::Error)
-//       .build();
-
-//     dialog.add_button("Close", gtk::ResponseType::Close);
-//     dialog.connect_response(move |_, _| send!(sender, DialogMsg::Close));
-
-//     Self { dialog }
-//   }
-
-//   fn connect_parent(&mut self, parent_widgets: &<AppModel as Model>::Widgets) {
-//     self
-//       .dialog
-//       .set_transient_for(Some(&<AppWidgets as Widgets<AppModel, ()>>::root_widget(
-//         parent_widgets,
-//       )))
-//   }
-
-//   fn root_widget(&self) -> Self::Root {
-//     self.dialog.clone()
-//   }
-
-//   fn view(
-//     &mut self,
-//     model: &ErrorDialogModel,
-//     _sender: relm4::Sender<<ErrorDialogModel as Model>::Msg>,
-//   ) {
-//     self.dialog.set_visible(!model.hidden);
-//     self.dialog.set_text(model.message.as_deref());
-//   }
-// }
-
-// impl Model for ErrorDialogModel {
-//   type Components = ();
-//   type Widgets = ErrorDialogWidgets;
-//   type Msg = DialogMsg;
-// }

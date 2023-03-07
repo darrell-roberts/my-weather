@@ -179,6 +179,9 @@ impl Component for AppModel {
         self.fetching = true;
         self.error = false;
         sender.oneshot_command(async { FetchWeather::Fetched(get_weather().await) });
+        // sender.oneshot_command(async {
+        //   FetchWeather::Fetched(Err(ApiError::TestError("blah".into())))
+        // });
       }
     }
   }
@@ -201,7 +204,7 @@ impl AppModel {
         }
         self.status_message = format!("Loaded weather at {}", Local::now().format("%v %r"));
       }
-      Err(err) => eprintln!("Failed to fetch weather {err}"),
+      Err(err) => self.status_dialog.emit(DialogMsg::Open(format!("{err}"))),
     }
   }
 }

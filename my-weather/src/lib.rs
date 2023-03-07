@@ -146,6 +146,8 @@ pub enum ApiError {
   Rss(#[from] reqwest::Error),
   #[error("Deserialize error {0}")]
   Parse(#[from] serde_xml_rs::Error),
+  #[error("Error for testing")]
+  TestError(String),
 }
 
 /// Gets the weather forecast from remote RSS feed.
