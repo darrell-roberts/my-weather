@@ -38,21 +38,20 @@ impl SimpleComponent for HeaderModel {
               gtk::ToggleButton {
                 set_label: "Celsius",
                 set_active: true,
-                connect_toggled[sender] => move |btn| {
+                connect_toggled[sender, button] => move |btn| {
                     if btn.is_active() {
                         sender.output(HeaderMsg::ChangeUnit(TempUnit::Celsius)).unwrap();
-                        // button.popdown();
+                        button.popdown();
                     }
                 }
               },
-
               gtk::ToggleButton {
                 set_label: "Fahrenheit",
                 set_group: Some(&group),
-                connect_toggled[sender] => move |btn| {
+                connect_toggled[sender, button] => move |btn| {
                     if btn.is_active() {
                         sender.output(HeaderMsg::ChangeUnit(TempUnit::Fahrenheit)).unwrap();
-                        // button.popdown();
+                        button.popdown();
                     }
                 }
               }

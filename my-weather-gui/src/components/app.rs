@@ -15,7 +15,6 @@ use relm4::{
 pub struct AppModel {
   forecast: FactoryVecDeque<ForecastEntryAndTempUnit>,
   fetching: bool,
-  error: bool,
   status_message: String,
   status_dialog: Controller<ErrorDialogModel>,
   header: Controller<HeaderModel>,
@@ -27,8 +26,6 @@ pub enum AppMsg {
   /// Error has occurred.
   Error(String),
   /// Clear weather forecasts entries.
-  Clear,
-  /// Change the temperature unit.
   ChangeUnit(TempUnit),
   /// Request fetch new forecast data
   Fetch,
@@ -129,7 +126,6 @@ impl Component for AppModel {
   ) -> relm4::ComponentParts<Self> {
     let mut model = AppModel {
       forecast: FactoryVecDeque::new(gtk::Box::default(), sender.input_sender()),
-      error: false,
       fetching: false,
       status_dialog: ErrorDialogModel::builder().launch(()).detach(),
       status_message: String::new(),
@@ -166,10 +162,8 @@ impl Component for AppModel {
     use AppMsg::*;
 
     match message {
-      Clear => self.forecast.guard().clear(),
       Error(error) => {
         self.fetching = false;
-        self.error = true;
         self.status_dialog.emit(DialogMsg::Open(error));
       }
       ChangeUnit(unit) => {
@@ -177,7 +171,6 @@ impl Component for AppModel {
       }
       Fetch => {
         self.fetching = true;
-        self.error = false;
         sender.oneshot_command(async { FetchWeather::Fetched(get_weather().await) });
         // sender.oneshot_command(async {
         //   FetchWeather::Fetched(Err(ApiError::TestError("blah".into())))

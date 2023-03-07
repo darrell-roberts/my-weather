@@ -54,7 +54,10 @@ impl SimpleComponent for ErrorDialogModel {
         self.message = Some(text);
         self.hidden = false;
       }
-      DialogMsg::Close => self.hidden = true,
+      DialogMsg::Close => {
+        self.message = None;
+        self.hidden = true;
+      }
     }
   }
 }
