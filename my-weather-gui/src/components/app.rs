@@ -114,7 +114,8 @@ impl Component for AppModel {
         },
 
         // Status bar.
-        append = status = &gtk::Statusbar {
+        #[name = "status"]
+        gtk::Statusbar {
           set_halign: gtk::Align::Fill,
         },
       },
@@ -181,7 +182,14 @@ impl Component for AppModel {
       }
     }
   }
+
+  fn pre_view() {
+    status.pop(STATUS_CONTEXT_ID);
+    status.push(STATUS_CONTEXT_ID, &model.status_message);
+  }
 }
+
+const STATUS_CONTEXT_ID: u32 = 1;
 
 impl AppModel {
   fn handle_api_result(&mut self, result: Result<ForeCast, ApiError>) {
