@@ -1,6 +1,7 @@
 .current {
   display: flex;
-  background-color: darkgreen;
+  /* background-color: darkgreen; */
+  background-image: linear-gradient(from right, darkgreen green);
   color: white;
   flex-grow: 1;
   border-radius: 8px;

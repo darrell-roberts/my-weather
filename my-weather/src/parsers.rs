@@ -14,18 +14,21 @@ use std::marker::PhantomData;
 /// Parse an optionally signed number.
 fn parse_number(input: &str) -> IResult<&str, f32> {
   let sign = context("sign", alt((tag("minus"), tag("plus"), tag("zero"))));
-
-  let num_parse = tuple((sign, opt(preceded(char(' '), digit1))));
+  let num_parse = tuple((opt(sign), opt(preceded(char(' '), digit1))));
 
   context(
     "parse_number",
-    map_res(num_parse, |(sign, n): (&str, Option<&str>)| {
-      if sign == "zero" {
+    map_res(num_parse, |(sign, n): (Option<&str>, Option<&str>)| {
+      if sign.map(|s| s == "zero").unwrap_or(false) {
         Ok(0.)
       } else {
-        n.expect("parsed number")
-          .parse::<f32>()
-          .map(|num| if sign == "minus" { -num } else { num })
+        n.expect("parsed number").parse::<f32>().map(|num| {
+          if sign.map(|s| s == "minus").unwrap_or(false) {
+            -num
+          } else {
+            num
+          }
+        })
       }
     }),
   )(input)
@@ -335,6 +338,20 @@ mod test {
             day: DayNight::Night,
             day_of_week: DayOfWeek::Wednesday,
         } if n == 0. && description == "Snow at times heavy."
+    ));
+
+    let test = "Wednesday: Chance of showers. High 6. POP 40%";
+    let (_, forecast) = parse_forecast::<Celsius>(test).unwrap();
+
+    assert!(matches!(
+        forecast,
+        Forecast {
+            celsius: Temperature::High(n, _),
+            fahrenheit: Temperature::High(..),
+            description,
+            day: DayNight::Day,
+            day_of_week: DayOfWeek::Wednesday
+        } if n == 6. && description == "Chance of showers."
     ))
   }
 
