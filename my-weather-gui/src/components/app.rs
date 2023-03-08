@@ -2,6 +2,7 @@ use super::{
   error_dialog::{DialogMsg, ErrorDialogModel},
   forecast_factory::ForecastEntryAndTempUnit,
   header_menu::{HeaderModel, HeaderMsg},
+  refresh_worker::{RefreshWorker, RefreshWorkerShutdown},
 };
 use crate::TempUnit;
 use chrono::Local;
@@ -18,6 +19,7 @@ pub struct AppModel {
   status_message: String,
   status_dialog: Controller<ErrorDialogModel>,
   header: Controller<HeaderModel>,
+  refresh_timer: Controller<RefreshWorker>,
 }
 
 #[derive(Debug)]
@@ -134,6 +136,9 @@ impl Component for AppModel {
         .forward(sender.input_sender(), |msg| match msg {
           HeaderMsg::ChangeUnit(unit) => AppMsg::ChangeUnit(unit),
         }),
+      refresh_timer: RefreshWorker::builder()
+        .launch(())
+        .forward(sender.input_sender(), |_| AppMsg::Fetch),
     };
     model.status_dialog.widget().set_transient_for(Some(root));
     model.handle_api_result(forecast);
@@ -177,6 +182,10 @@ impl Component for AppModel {
         // });
       }
     }
+  }
+
+  fn shutdown(&mut self, _widgets: &mut Self::Widgets, _output: relm4::Sender<Self::Output>) {
+    self.refresh_timer.emit(RefreshWorkerShutdown);
   }
 
   fn pre_view() {
