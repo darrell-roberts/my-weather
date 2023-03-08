@@ -37,7 +37,8 @@ fn start_timer(sender: ComponentSender<RefreshWorker>) -> JoinHandle<()> {
   RUNNING.store(true, Ordering::Relaxed);
   thread::spawn(move || {
     while RUNNING.load(Ordering::Relaxed) {
-      thread::sleep(Duration::from_secs(10));
+      // wake every 15 minutes.
+      thread::sleep(Duration::from_secs(60 * 15));
       sender.output(RefreshOutput).unwrap();
     }
   })

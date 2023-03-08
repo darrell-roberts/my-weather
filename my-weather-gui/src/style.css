@@ -25,6 +25,7 @@ item {
 item.current {
   background-color: lightskyblue;
   padding-top: 10px;
+  color: black;
 }
 
 item.warning {
@@ -54,7 +55,7 @@ temperature.high {
 }
 
 temperature.low {
-  background-color: blue;
+  background-color: darkslateblue;
 
 }
 
@@ -83,6 +84,6 @@ description.day {
 }
 
 description.night {
-  background-color: darkblue;
+  background-color: darkslateblue;
   color: white;
 }

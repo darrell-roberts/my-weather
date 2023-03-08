@@ -34,6 +34,7 @@ impl SimpleComponent for HeaderModel {
             #[wrap(Some)]
             set_child = &gtk::Box {
               set_orientation: gtk::Orientation::Vertical,
+              set_spacing: 10,
               #[name = "group"]
               gtk::ToggleButton {
                 set_label: "Celsius",

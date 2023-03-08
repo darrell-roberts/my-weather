@@ -76,25 +76,6 @@ impl Component for AppModel {
                 set_orientation: gtk::Orientation::Vertical,
                 set_margin_all: 5,
                 set_spacing: 5,
-                #[watch]
-                set_visible: !model.fetching,
-              },
-
-              // Fetching container.
-              gtk::Box {
-                set_orientation: gtk::Orientation::Vertical,
-                set_margin_all: 5,
-                set_spacing: 5,
-                #[watch]
-                set_visible: model.fetching,
-                set_hexpand: true,
-                set_vexpand: true,
-                gtk::Label {
-                  set_label: "Fetching weather..."
-                },
-                #[name = "spinner"]
-                gtk::Spinner {
-                }
               },
           },
         },
@@ -190,7 +171,14 @@ impl Component for AppModel {
 
   fn pre_view() {
     status.pop(STATUS_CONTEXT_ID);
-    status.push(STATUS_CONTEXT_ID, &model.status_message);
+    status.push(
+      STATUS_CONTEXT_ID,
+      if model.fetching {
+        "Fetching forecast..."
+      } else {
+        &model.status_message
+      },
+    );
   }
 }
 
