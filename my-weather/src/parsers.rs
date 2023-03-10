@@ -14,7 +14,7 @@ use std::marker::PhantomData;
 /// Parse an optionally signed number.
 fn parse_number(input: &str) -> IResult<&str, f32> {
   let sign = context("sign", alt((tag("minus"), tag("plus"), tag("zero"))));
-  let num_parse = tuple((opt(sign), opt(preceded(char(' '), digit1))));
+  let num_parse = tuple((opt(sign), opt(preceded(space0, digit1))));
 
   context(
     "parse_number",
@@ -22,7 +22,8 @@ fn parse_number(input: &str) -> IResult<&str, f32> {
       if sign.map(|s| s == "zero").unwrap_or(false) {
         Ok(0.)
       } else {
-        n.expect("parsed number").parse::<f32>().map(|num| {
+        // println!(r#"input: "{input}" sign: {sign:?} n {n:?}"#);
+        n.unwrap_or_default().parse::<f32>().map(|num| {
           if sign.map(|s| s == "minus").unwrap_or(false) {
             -num
           } else {
@@ -352,7 +353,21 @@ mod test {
             day: DayNight::Day,
             day_of_week: DayOfWeek::Wednesday
         } if n == 6. && description == "Chance of showers."
-    ))
+    ));
+
+    let test = "Thursday: A mix of sun and cloud. High 6.";
+    let (_, forecast) = parse_forecast::<Celsius>(test).unwrap();
+
+    assert!(matches!(
+        forecast,
+        Forecast {
+            celsius: Temperature::High(n, _),
+            fahrenheit: Temperature::High(..),
+            description,
+            day: DayNight::Day,
+            day_of_week: DayOfWeek::Thursday
+        } if n == 6. && description == "A mix of sun and cloud."
+    ));
   }
 
   #[test]
