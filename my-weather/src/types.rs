@@ -102,31 +102,27 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForecastEntry> {
           } else {
             match entry.title.as_str().parse::<Forecast>() {
               Ok(fc) => {
-                if fc.day == DayNight::Day {
-                  day_map.insert(
-                    key,
+                let is_day = fc.day == DayNight::Day;
+                let entry = Some(ForecastWithEntry {
+                  forecast: fc,
+                  entry,
+                });
+                day_map.insert(
+                  key,
+                  if is_day {
                     ForecastEntry::Future {
                       sequence: index,
-                      day: Some(ForecastWithEntry {
-                        forecast: fc,
-                        entry,
-                      }),
+                      day: entry,
                       night: None,
-                    },
-                  );
-                } else {
-                  day_map.insert(
-                    key,
+                    }
+                  } else {
                     ForecastEntry::Future {
                       sequence: index,
                       day: None,
-                      night: Some(ForecastWithEntry {
-                        forecast: fc,
-                        entry,
-                      }),
-                    },
-                  );
-                }
+                      night: entry,
+                    }
+                  },
+                );
               }
               Err(err) => eprintln!("failed to parse forecast: {err:?}"),
             }
