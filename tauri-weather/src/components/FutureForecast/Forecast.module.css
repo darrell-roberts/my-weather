@@ -1,87 +1,86 @@
 .current {
-  display: flex;
-  /* background-color: darkgreen; */
-  background-image: linear-gradient(from right, darkgreen green);
-  color: black;
-  flex-grow: 1;
-  border-radius: 8px;
-  padding: 5px 0 5px 0;
+    display: flex;
+    background-image: linear-gradient(from right, darkgreen green);
+    color: black;
+    flex-grow: 1;
+    border-radius: 8px;
+    padding: 5px 0 5px 0;
 }
 
 .future {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  flex-grow: 1;
-  border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    flex-grow: 1;
+    border-radius: 8px;
 }
 
 .futureContainer {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  color: black;
-  border-radius: 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    color: black;
+    border-radius: 8px;
 }
 
 .container {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 5px;
-  background-image: linear-gradient(to right, gainsboro, black);
-  border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 5px;
+    background-image: linear-gradient(to right, gainsboro, black);
+    border-radius: 8px;
 }
 
 .title {
-  font-weight: bold;
+    font-weight: bold;
 }
 
 .summary {
-  font-style: italic;
+    font-style: italic;
 }
 
 .temperature {
-  width: 60px;
-  text-align: end;
+    width: 60px;
+    text-align: end;
 }
 
 .day {
-  display: flex;
-  background-color: rgb(171, 171, 28);
-  color: black;
-  border-radius: 8px;
-  padding: 5px 0 5px 0;
+    display: flex;
+    background-color: rgb(171, 171, 28);
+    color: black;
+    border-radius: 8px;
+    padding: 5px 0 5px 0;
 }
 
 .night {
-  display: flex;
-  background-color: rgb(72, 62, 136);
-  color: white;
-  border-radius: 8px;
-  padding: 5px 0 5px 0;
+    display: flex;
+    background-color: rgb(72, 62, 136);
+    color: white;
+    border-radius: 8px;
+    padding: 5px 0 5px 0;
 }
 
 .dayOfWeek {
-  width: 110px;
-  text-align: left;
-  margin-left: 15px;
+    width: 110px;
+    text-align: left;
+    margin-left: 15px;
 }
 
 .description {
-  font-size: medium;
-  margin-left: 5px;
-  margin-right: 15px;
+    /* font-size: medium; */
+    margin-left: 5px;
+    margin-right: 15px;
 }
 
 .warningContainer {
-  background-image: linear-gradient(to bottom right, lightcoral, red);
-  color: white;
-  font-weight: bold;
-  border-radius: 8px;
+    background-image: linear-gradient(to bottom right, lightcoral, red);
+    color: white;
+    font-weight: bold;
+    border-radius: 8px;
 }
 
 @media (prefers-color-scheme: light) {
-  .container {
-    background-image: linear-gradient(to right, gainsboro, white);
-  }
+    .container {
+        background-image: linear-gradient(to right, gainsboro, white);
+    }
 }

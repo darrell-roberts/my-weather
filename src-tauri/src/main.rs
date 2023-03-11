@@ -15,6 +15,12 @@ use tokio::time;
 #[derive(Serialize, Clone)]
 struct LocalApiError(String);
 
+impl std::fmt::Display for LocalApiError {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    f.write_str(&self.0)
+  }
+}
+
 #[tauri::command]
 async fn get_weather_gui() -> Result<Vec<ForecastEntry>, LocalApiError> {
   get_weather()
@@ -26,8 +32,7 @@ async fn get_weather_gui() -> Result<Vec<ForecastEntry>, LocalApiError> {
 fn main() {
   tauri::Builder::default()
     .setup(|app| {
-      let window = app.get_window("main").expect("No main window");
-      start_refresh(window);
+      start_refresh(app.get_window("main").expect("No main window"));
       Ok(())
     })
     .invoke_handler(tauri::generate_handler![get_weather_gui])
@@ -40,22 +45,16 @@ fn start_refresh(window: Window) -> JoinHandle<()> {
     let mut interval = time::interval(Duration::from_secs(60 * 15));
     loop {
       interval.tick().await;
-      match get_weather()
+      get_weather()
         .await
         .map(|forecast| to_forecast(forecast.entries()))
         .map_err(|err| LocalApiError(err.to_string()))
-      {
-        Ok(forecast) => {
+        .and_then(|forecast| {
           window
             .emit("refresh", forecast)
-            .unwrap_or_else(|err| eprintln!("Failed to emit refresh {err}"));
-        }
-        Err(err) => {
-          window
-            .emit("refresh_error", err)
-            .unwrap_or_else(|err| eprintln!("Failed to emit refresh {err}"));
-        }
-      }
+            .map_err(|err| LocalApiError(err.to_string()))
+        })
+        .unwrap_or_else(|err| eprintln!("Failed to emit refresh {err}"))
     }
   })
 }

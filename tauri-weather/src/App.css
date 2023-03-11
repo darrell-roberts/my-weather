@@ -1,19 +1,19 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  text-align: center;
-  color: white;
+    max-width: 1280px;
+    margin: 0 auto;
+    text-align: center;
+    color: white;
 }
 
 .refresh {
-  background-color: darkcyan;
-  color: white;
-  padding: 5px 10px 5px 10px;
+    background-color: darkcyan;
+    color: white;
+    padding: 5px 10px 5px 10px;
 }
 
 .loading {
-  padding: 5em;
-  color: black;
+    padding: 5em;
+    color: black;
 }
 
 .status {
@@ -24,7 +24,7 @@
 }
 
 @media (prefers-color-scheme: light) {
-  .status {
-    color: black;
-  }
+    .status {
+        color: black;
+    }
 }

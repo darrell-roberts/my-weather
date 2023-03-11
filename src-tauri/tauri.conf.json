@@ -55,7 +55,7 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 520,
+        "height": 550,
         "resizable": true,
         "title": "My Weather",
         "width": 523
