@@ -3,19 +3,19 @@ import './App.css'
 import './components/FutureForecast/Forecast';
 import FutureForecast from './components/FutureForecast/Forecast';
 import { invoke } from '@tauri-apps/api';
-import { ForecastEntry } from "./common/types";
+import { ForecastEntry, WeatherResponse } from "./common/types";
 import { WebviewWindow } from "@tauri-apps/api/window";
 
 type AppState = {
     entries: ForecastEntry[];
     fetching: boolean;
     error?: string;
-    lastRefreshed?: Date;
+    lastRefreshed?: string;
 }
 
 type Action = { type: "getWeather" }
     | { type: "error", error: string }
-    | { type: "receiveWeather", weather: ForecastEntry[] };
+    | { type: "receiveWeather", weather: WeatherResponse };
 
 function reducer(state: AppState, action: Action): AppState {
     switch (action.type) {
@@ -32,8 +32,8 @@ function reducer(state: AppState, action: Action): AppState {
         case "receiveWeather": return {
             ...state,
             fetching: false,
-            entries: action.weather,
-            lastRefreshed: new Date(),
+            entries: action.weather.forecasts,
+            lastRefreshed: action.weather.fetched,
         }
     }
 }
@@ -48,7 +48,7 @@ function App() {
     }, []);
 
     useEffect(() => {
-        const unListen = new WebviewWindow("main").listen<ForecastEntry[]>("refresh", event => {
+        const unListen = new WebviewWindow("main").listen<WeatherResponse>("refresh", event => {
             dispatch({ type: "receiveWeather", weather: event.payload });
         })
         return () => {
@@ -58,7 +58,7 @@ function App() {
 
     useEffect(() => {
         if (state.fetching) {
-            invoke<ForecastEntry[]>("get_weather_gui")
+            invoke<WeatherResponse>("get_weather_gui")
                 .then(data => dispatch({ type: "receiveWeather", weather: data }))
                 .catch(error => dispatch({ type: "error", error: error.toString() }));
         }
@@ -83,7 +83,7 @@ function App() {
             </button>
             {state.lastRefreshed &&
                 <div className="status">
-                    Loaded {state.lastRefreshed.toString()}
+                    Loaded {state.lastRefreshed}
                 </div>
             }
         </div>

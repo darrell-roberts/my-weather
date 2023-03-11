@@ -3,6 +3,7 @@
   windows_subsystem = "windows"
 )]
 
+use chrono::Local;
 use my_weather::{
   get_weather,
   types::{to_forecast, ForecastEntry},
@@ -15,17 +16,29 @@ use tokio::time;
 #[derive(Serialize, Clone)]
 struct LocalApiError(String);
 
+/// Weather forecast response.
+#[derive(Serialize, Clone)]
+struct WeatherResponse {
+  forecasts: Vec<ForecastEntry>,
+  fetched: String,
+}
+
 impl std::fmt::Display for LocalApiError {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
     f.write_str(&self.0)
   }
 }
 
+/// Handle the client request for a new forecast.
 #[tauri::command]
-async fn get_weather_gui() -> Result<Vec<ForecastEntry>, LocalApiError> {
+async fn get_weather_gui() -> Result<WeatherResponse, LocalApiError> {
   get_weather()
     .await
     .map(|forecast| to_forecast(forecast.entries()))
+    .map(|forecasts| WeatherResponse {
+      forecasts,
+      fetched: format!("{}", Local::now().format("%x %r")),
+    })
     .map_err(|err| LocalApiError(err.to_string()))
 }
 
@@ -40,6 +53,7 @@ fn main() {
     .expect("error while running tauri application");
 }
 
+/// Emit a refreshed forecast to the client every 15 minutes.
 fn start_refresh(window: Window) -> JoinHandle<()> {
   tauri::async_runtime::spawn(async move {
     let mut interval = time::interval(Duration::from_secs(60 * 15));
@@ -48,6 +62,10 @@ fn start_refresh(window: Window) -> JoinHandle<()> {
       get_weather()
         .await
         .map(|forecast| to_forecast(forecast.entries()))
+        .map(|forecasts| WeatherResponse {
+          forecasts,
+          fetched: format!("{}", Local::now().format("%x %r")),
+        })
         .map_err(|err| LocalApiError(err.to_string()))
         .and_then(|forecast| {
           window

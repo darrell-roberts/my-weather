@@ -1,3 +1,8 @@
+export type WeatherResponse = {
+    forecasts: ForecastEntry[],
+    fetched: string,
+}
+
 export type Forecast = {
   entry: Entry[];
 }

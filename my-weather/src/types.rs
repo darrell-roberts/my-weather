@@ -1,6 +1,6 @@
 use crate::{Entry, Term};
 use serde::{Deserialize, Serialize, Serializer};
-use std::{collections::HashMap, marker::PhantomData};
+use std::{collections::HashMap, marker::PhantomData, ops::Not};
 
 use crate::parsers::{parse_current_forecast, parse_forecast};
 
@@ -85,7 +85,7 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForecastEntry> {
             .as_str()
             .parse::<CurrentForecast>()
             .ok()
-            .map(|cf| ForecastEntry::Current(CurrentForecastWithEntry { current: cf, entry })),
+            .map(|current| ForecastEntry::Current(CurrentForecastWithEntry { current, entry })),
         );
       }
       Term::Warnings => result.push(ForecastEntry::Warning(entry)),
@@ -100,20 +100,17 @@ pub fn to_forecast(entries: impl Iterator<Item = Entry>) -> Vec<ForecastEntry> {
               *night = fc_entry;
             }
           } else {
+            let (day, night) = if is_day {
+              (fc_entry, None)
+            } else {
+              (None, fc_entry)
+            };
             day_map.insert(
               day_key,
-              if is_day {
-                ForecastEntry::Future {
-                  sequence: index,
-                  day: fc_entry,
-                  night: None,
-                }
-              } else {
-                ForecastEntry::Future {
-                  sequence: index,
-                  day: None,
-                  night: fc_entry,
-                }
+              ForecastEntry::Future {
+                sequence: index,
+                day,
+                night,
               },
             );
           }
