@@ -6,7 +6,7 @@ use crate::parsers::{parse_current_forecast, parse_forecast};
 
 /// Wrapper type for weather entry elements allowing
 /// classifying and grouping entries.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "type", content = "content")]
 pub enum ForecastEntry {
   Warning(Entry),
@@ -240,13 +240,13 @@ impl std::fmt::Display for Temperature<Fahrenheit> {
   }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ForecastWithEntry {
   pub forecast: Forecast,
   pub entry: Entry,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Forecast {
   pub celsius: Temperature<Celsius>,
   pub fahrenheit: Temperature<Fahrenheit>,
@@ -299,13 +299,13 @@ impl std::str::FromStr for Forecast {
   }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CurrentForecastWithEntry {
   pub current: CurrentForecast,
   pub entry: Entry,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CurrentForecast {
   pub celsius: Temperature<Celsius>,
   pub fahrenheit: Temperature<Fahrenheit>,

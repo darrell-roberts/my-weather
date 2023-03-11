@@ -4,6 +4,7 @@ import './components/FutureForecast/Forecast';
 import FutureForecast from './components/FutureForecast/Forecast';
 import { invoke } from '@tauri-apps/api';
 import { ForecastEntry } from "./common/types";
+import { WebviewWindow } from "@tauri-apps/api/window";
 
 type AppState = {
     entries: ForecastEntry[];
@@ -44,6 +45,15 @@ function App() {
 
     useEffect(() => {
         dispatch({ type: "getWeather" });
+    }, []);
+
+    useEffect(() => {
+        const unListen = new WebviewWindow("main").listen<ForecastEntry[]>("refresh", event => {
+            dispatch({ type: "receiveWeather", weather: event.payload });
+        })
+        return () => {
+            unListen.then(f => f());
+        }
     }, []);
 
     useEffect(() => {

@@ -2,7 +2,7 @@
   display: flex;
   /* background-color: darkgreen; */
   background-image: linear-gradient(from right, darkgreen green);
-  color: white;
+  color: black;
   flex-grow: 1;
   border-radius: 8px;
   padding: 5px 0 5px 0;

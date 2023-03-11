@@ -42,7 +42,7 @@ struct Feed {
 }
 
 /// RSS Entry Element.
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug, Serialize, Clone)]
 pub struct Entry {
   pub title: String,
   // link: String,
@@ -90,13 +90,13 @@ impl std::fmt::Display for Entry {
 }
 
 // RSS Category Element.
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Copy, Clone)]
 pub struct Category {
   pub term: Term,
 }
 
 /// RSS Category term attribute.
-#[derive(Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq, Serialize, Copy, Clone)]
 pub enum Term {
   #[serde(rename = "Current Conditions")]
   Current,
