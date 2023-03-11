@@ -6,7 +6,7 @@ Written in Rust with relm4/gtk4.
 # tauri-weather
 Written in Rust/TS with Tauri.
 
-<img src="https://user-images.githubusercontent.com/33698065/216787588-686fdc0e-0df3-406e-9394-ebe1bf6db809.png"/>
+<img width="526" alt="image" src="https://user-images.githubusercontent.com/33698065/224513992-33ea0b2b-2796-4589-88a7-f3a780d48a95.png">
 
 # my-weather
 Simple Weather RSS parser and command line weather forecast.
